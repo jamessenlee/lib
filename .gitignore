@@ -1,0 +1,8 @@
+*~
+output
+Makefile
+.*app*
+.comake2*
+.svn*
+*.a
+*.o
