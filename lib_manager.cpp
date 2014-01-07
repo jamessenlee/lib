@@ -1,12 +1,15 @@
-#include "new_lib_manager.h"
+#include "lib_manager.h"
+#include "lib_util.h"
+#include <limits.h>
 
 using st::VersionManager;
 
-namespace afs {
-namespace bd {
+namespace das_lib {
 
-int parse_test_unit_plan_line(unit_plan_line_t* p_out, char* line_str)
+
+int parse_test_unit_plan_line(unit_plan_line_t* p_out, char*)//char* line_str)
 {
+#if 0    
     int ret = 0;
     char* str_section[4 + 1];
     const u_int N_SECTION = sizeof(str_section) / sizeof(*str_section);
@@ -29,15 +32,16 @@ int parse_test_unit_plan_line(unit_plan_line_t* p_out, char* line_str)
         WARNING_LOG("Invalid plan_id=%s", str_section[1]);
         return -1;
     }
-
-    p_out->unit_id = unit_id;
-    p_out->plan_id = plan_id;
+#endif
+    
+    p_out->unit_id = 1;//unit_id;
+    p_out->plan_id = 2;//plan_id;
     return 0;
 
 }
 
 
-int load_test_unit_plan_table(TestUnitPlanTable &table, const char* fpath, const PartitionArg &load_arg)
+int load_test_unit_plan_table(TestUnitPlanTable &table, const char* fpath, const PartitionArg &)
 {
     if (NULL == fpath) {
         FATAL_LOG("Param[fpath] is NULL");
@@ -76,7 +80,7 @@ int load_test_unit_plan_table(TestUnitPlanTable &table, const char* fpath, const
 }
 
 
-int load_test_unit_table(TestUnitTable &table, const char* fpath, const PartitionArg &load_arg)
+int load_test_unit_table(TestUnitTable &table, const char* fpath, const PartitionArg &)
 {
     if (NULL == fpath) {
         FATAL_LOG("Param[fpath] is NULL");
@@ -87,7 +91,7 @@ int load_test_unit_table(TestUnitTable &table, const char* fpath, const Partitio
     
 }
 
-bool test_update_handler(TestUnitPlanTable &table, const _IncRecordType &record)
+bool test_update_handler(TestUnitPlanTable &table, const IncRecordType &record)
 {
     static int aaa = 0;
     aaa ++;
@@ -97,7 +101,7 @@ bool test_update_handler(TestUnitPlanTable &table, const _IncRecordType &record)
     uint32_t unit_id = 0;
     uint32_t plan_id = 0;
 
-    if (0 != get_and_check_uint32(record, 1, "event_id", event_id, 0, MAX_UINT)) {
+    if (0 != get_and_check_uint32(record, 1, "event_id", event_id, 0, UINT_MAX)) {
         FATAL_LOG("Failed to get event_id");
         return -1;
     }
@@ -107,12 +111,12 @@ bool test_update_handler(TestUnitPlanTable &table, const _IncRecordType &record)
         return -1;
     }
     
-    if (0 != get_and_check_uint32(record, 3, "uint_id", unit_id, 1, MAX_UINT)) {
+    if (0 != get_and_check_uint32(record, 3, "uint_id", unit_id, 1, UINT_MAX)) {
         FATAL_LOG("Failed to get plan_id");
         return -1;
     }
 
-    if (0 != get_and_check_uint32(record, 4, "plan_id", plan_id, 1, MAX_UINT)) {
+    if (0 != get_and_check_uint32(record, 4, "plan_id", plan_id, 1,UINT_MAX)) {
         FATAL_LOG("Failed to get plan_id");
         return -1;
     }
@@ -197,10 +201,8 @@ TestUnitCon *unit_plan_exp_connector_maker(TestUnitTable &inv_table, TableGroup 
 }
 
 
-static const char *TEST_UNIT_PLAN_TABLE_PATH = "./test/data/bdlib/test_unit_plan.txt";
-static const char *TEST_UNIT_TABLE_PATH = "./test/data/bdlib/test_unit.txt";
-
-
+//static const char *TEST_UNIT_PLAN_TABLE_PATH = "./test/data/bdlib/test_unit_plan.txt";
+//static const char *TEST_UNIT_TABLE_PATH = "./test/data/bdlib/test_unit.txt";
     
 
 inline double MB(long mem_in_bytes)
@@ -253,12 +255,8 @@ bool LibManager::init()
     
 
     //add tables
-    //reloadable table1
     IBaseLoadStrategy<TestUnitPlanTable> *p_load_strategy = 
-        new(std::nothrow) ReloadableLoadStrategy<TestUnitPlanTable>(
-                                _partition_arg, 
-                                 load_test_unit_plan_table, 
-                                 TEST_UNIT_PLAN_TABLE_PATH);
+        new(std::nothrow) NebulaLoadStrategy<TestUnitPlanTable>();
     if(NULL == p_load_strategy) {
         FATAL_LOG("fail to allocate load strategy");
         return false;
@@ -271,12 +269,8 @@ bool LibManager::init()
     NEW_AND_REGISTER_TABLE(TestUnitPlanTable, unit_plan_table, p_load_strategy, p_update_strategy, 
                            DEFAULT_LEVEL, table_group);
     
-    //reloadable base table
     IBaseLoadStrategy<TestUnitTable> *p_test_unit_load_strategy = 
-        new(std::nothrow) ReloadableLoadStrategy<TestUnitTable>(
-                                _partition_arg, 
-                                 load_test_unit_table, 
-                                 TEST_UNIT_TABLE_PATH);
+        new(std::nothrow) NebulaLoadStrategy<TestUnitTable>();
     if(NULL == p_test_unit_load_strategy) {
         FATAL_LOG("fail to allocate load strategy");
         return false;
@@ -285,11 +279,8 @@ bool LibManager::init()
     NEW_AND_REGISTER_TABLE(TestUnitTable, unit_table, p_test_unit_load_strategy, NULL, 
                            RELOAD_LEVEL, table_group);
 
-    //refreshable exp table
     p_test_unit_load_strategy = 
-        new(std::nothrow) RefreshLoadStrategy<TestUnitTable>(
-                                refresh_unit_exp_table,
-                                &table_group);
+        new(std::nothrow) NebulaLoadStrategy<TestUnitTable>();
     if(NULL == p_test_unit_load_strategy) {
         FATAL_LOG("fail to allocate load strategy");
         return false;
@@ -331,7 +322,7 @@ bool LibManager::init()
     
     if (0 != _inc_readers.subscribe_topic(
                     "budget_user", budget_inc_conf)) {
-        FATAL_LOG("fail to init das_inc_reader");
+//        FATAL_LOG("fail to init das_inc_reader");
         return false;
     }
     return true;
@@ -339,6 +330,11 @@ bool LibManager::init()
 
 bool LibManager::load_base_indexes(const char *p_path, const char *p_name)
 {
+    if (p_path == NULL || p_name == NULL) {
+//        FATAL_LOG("Null param %p%p",p_path,p_name);
+        return false;      
+    }
+    
     int pos = -1;
     pos = _vm_tg.create_version();
     if (pos < 0) {
@@ -392,7 +388,7 @@ bool LibManager::handle_inc()
     do {
         // get current event id.
         count ++;
-        if (0 != get_and_check_uint64(record, INC_EVENTID_IDX, "event_id", cur_eid)) {
+        if (0 != get_and_check_uint64(record, 1, "event_id", cur_eid)) {
             return -1;
         }
 
@@ -422,5 +418,4 @@ bool LibManager::handle_inc()
 }
 
 
-}  // namespace bd
-}  // namespace afs
+}  // namespace das_lib

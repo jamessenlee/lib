@@ -25,14 +25,14 @@ bool NebulaLoadStrategy<_Table>::load(_Table &)
 }
 
 template <class _Table>
-bool NebulaLoadStrategy<_Table>::is_reloaded(_Table &)
+bool NebulaLoadStrategy<_Table>::is_reloaded() const
 {   
     return true;
 }
 
 template <class _Table>
 NebulaLoadStrategy<_Table> *
-NebulaLoadStrategy<_Table>::clone(_TableGroup *) const
+NebulaLoadStrategy<_Table>::clone(TableGroup *) const
 {
 //    TRACE_LOG("NebulaLoadStrategy clone called");
     return new (std::nothrow) NebulaLoadStrategy<_Table>(*this);
@@ -40,9 +40,9 @@ NebulaLoadStrategy<_Table>::clone(_TableGroup *) const
 
 //用于倒排的创建
 template <class _Table, class _Connector>
-ConnectorLoadStrategy<Table,_Connector>::ConnectorLoadStrategy(const std::string &desc,
+ConnectorLoadStrategy<_Table,_Connector>::ConnectorLoadStrategy(const std::string &desc,
             ConnectorMaker connector_maker,
-            _TableGroup *p_table_group)
+            TableGroup *p_table_group)
          : _conn_desc(desc)
          , _p_connector(NULL)
          , _connector_maker(connector_maker)
@@ -53,7 +53,7 @@ ConnectorLoadStrategy<Table,_Connector>::ConnectorLoadStrategy(const std::string
 }
 
 template <class _Table, class _Connector>
-ConnectorLoadStrategy<Table,_Connector>::~ConnectorLoadStrategy()
+ConnectorLoadStrategy<_Table,_Connector>::~ConnectorLoadStrategy()
 {
 //        TRACE_LOG("%s", _conn_desc.c_str());
 
@@ -64,13 +64,13 @@ ConnectorLoadStrategy<Table,_Connector>::~ConnectorLoadStrategy()
 }
 
 template <class _Table, class _Connector>
-bool ConnectorLoadStrategy<_Table, _Connector>::is_reloaded()
+bool ConnectorLoadStrategy<_Table, _Connector>::is_reloaded() const
 {
     return false;
 }
 
 template <class _Table, class _Connector>
-bool ConnectorLoadStrategy<_Table, _Connector>::load(_Table &table)
+bool ConnectorLoadStrategy<_Table, _Connector>::load(_Table&)//_Table &table)
 {
     return true;
 }
@@ -118,7 +118,7 @@ void ConnectorLoadStrategy<_Table, _Connector>::show_connector() const
 }
 
 template <class _Table, class _Connector>
-void ConnectorLoadStrategy<_Table, _Connector>::enable_connector(_Table &table)
+void ConnectorLoadStrategy<_Table, _Connector>::enable_connector(_Table&)//_Table &table)
 {
     if (NULL == _p_connector) {
 //        FATAL_LOG("%s has not been initialized yet", _conn_desc.c_str());
@@ -142,7 +142,7 @@ void ConnectorLoadStrategy<_Table, _Connector>::enable_connector(_Table &table)
 }
 
 template <class _Table, class _Connector>
-void ConnectorLoadStrategy<_Table, _Connector>::disable_connector(_Table &table)
+void ConnectorLoadStrategy<_Table, _Connector>::disable_connector(_Table& )//_Table &table)
 {
     if (NULL == _p_connector) {
 //        FATAL_LOG("%s has not been initialized yet", _conn_desc.c_str());
@@ -156,7 +156,8 @@ void ConnectorLoadStrategy<_Table, _Connector>::disable_connector(_Table &table)
 
 template <class _Table, class _Connector>
 ConnectorLoadStrategy<_Table, _Connector>::ConnectorLoadStrategy(const ConnectorLoadStrategy &rhs)
-    : _conn_desc(rhs._conn_desc)
+    : IBaseLoadStrategy<_Table>(rhs)
+    , _conn_desc(rhs._conn_desc)
     , _p_connector(NULL)
     , _connector_maker(rhs._connector_maker)
     , _p_table_group(NULL)
@@ -167,7 +168,7 @@ ConnectorLoadStrategy<_Table, _Connector>::ConnectorLoadStrategy(const Connector
 
 template <class _Table, class _Connector>
 ConnectorLoadStrategy<_Table, _Connector> *
-ConnectorLoadStrategy<_Table, _Connector>::clone(_TableGroup *p_table_group) const
+ConnectorLoadStrategy<_Table, _Connector>::clone(TableGroup *p_table_group) const
 {
     if (NULL == p_table_group) {
 //        FATAL_LOG("p_table_group is NULL");
@@ -190,20 +191,20 @@ ConnectorLoadStrategy<_Table, _Connector>::clone(_TableGroup *p_table_group) con
 }
 
 template <class _Table>
-bool IncUpdateStrategy<_Table>::init(_Table &table)
+bool IncUpdateStrategy<_Table>::init(_Table&)//_Table &table)
 {
     return true;
 }
 
 template <class _Table>
-bool IncUpdateStrategy<_Table>::update(_Table &table, const _IncRecordType &record)
+bool IncUpdateStrategy<_Table>::update(_Table &table, const IncRecordType &record)
 {
     if (NULL == _update_handler) {
-        FATAL_LOG("_update_handler is NULL");
+//        FATAL_LOG("_update_handler is NULL");
         return false;
     }
 
-    TRACE_LOG("IncUpdateStrategy::update called");
+//    TRACE_LOG("IncUpdateStrategy::update called");
     return _update_handler(table, record);
 }
 
@@ -211,7 +212,7 @@ template <class _Table>
 IncUpdateStrategy<_Table> *
 IncUpdateStrategy<_Table>::clone() const
 {
-    TRACE_LOG("IncUpdateStrategy::clone called");
+//    TRACE_LOG("IncUpdateStrategy::clone called");
     return new (std::nothrow) IncUpdateStrategy<_Table>(*this);
 }
 

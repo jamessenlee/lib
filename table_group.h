@@ -2,12 +2,10 @@
 #ifndef NEW_TABLE_GROUP_H
 #define NEW_TABLE_GROUP_H
 
-#include "bd_defs.h"                        // types/attributes
-#include "bd_index_conf.h"                  // index_conf_t
-#include "bd_table_manager.hpp"
+#include "table_defs.h"                        // types/attributes
+#include "table_manager.hpp"
 
-namespace afs {
-namespace bd {
+namespace das_lib {
 
 class IBaseTableManager;
 
@@ -165,7 +163,6 @@ private:
 };
 #endif
 
-}  // namespace bd
-}  // namespace afs
+}  // namespace das_lib
 
 #endif  // NEW_TABLE_GROUP_H

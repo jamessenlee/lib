@@ -1,7 +1,7 @@
 // Copyright (c) 2010, 2011 Baidu.com, Inc. All Rights Reserved
 // Author: GE Jun, JIANG Rujie
-#include "new_lib_manager.h"
-#include "nova_thread.h"
+#include "lib_manager.h"
+//#include "nova_thread.h"
 #include <gflags/gflags.h>
 
 DEFINE_int32(sleep_interval, 1, "Sleep interval after handling inc");
@@ -18,9 +18,10 @@ DEFINE_string(log_prefix_name, "mock.",
 DECLARE_string(flagfile);
 
 struct conf_t {
-    afs::bd::LibManager bdlib;
+    das_lib::LibManager bdlib;
 };
 
+#if 0
 struct inc_bd_thrd_t : public NOVA_PUBLIC_UTIL::Thread {
     inc_bd_thrd_t(conf_t * conf) : _conf(conf)
     {}
@@ -72,10 +73,11 @@ struct inc_bd_thrd_t : public NOVA_PUBLIC_UTIL::Thread {
     
     conf_t * _conf;    
 };
+#endif
 
-
-int main(int argc, char **argv)
+int main()
 {
+#if 0    
     int ret = 0;
     conf_t conf;
 
@@ -111,6 +113,7 @@ int main(int argc, char **argv)
     inc_bd_thrd.join();
         
     ul_closelog(0);
+#endif    
     return 0;
 }
 

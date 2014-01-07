@@ -2,15 +2,15 @@
 #ifndef NOVA_BDLIB_MANAGER_H
 #define NOVA_BDLIB_MANAGER_H
 
-#include <version_table.hpp>
-#include "new_table_group.h"
+#include "table_group.h"
 #include "das_inc_reader.h"
 #include "index_reader.h"
 
-namespace afs {
-namespace bd {
+namespace das_lib {
 
 ///TODO:for test only
+
+typedef unsigned long long event_id_t;    
 
 typedef struct {
     u_int unit_id;
@@ -55,7 +55,6 @@ private:
     nova::bs::IndexReader _inc_readers; 
 };
 
-}  // namespace bd
 }  // namespace afs
 
 #endif  // _BD_EVERYTHING_H_

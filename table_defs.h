@@ -77,6 +77,7 @@ inline unsigned long never_zero(unsigned long x)
 
 DEFINE_ATTRIBUTE(USER_ID, u_int);
 DEFINE_ATTRIBUTE(PLAN_ID, u_int);
+DEFINE_ATTRIBUTE(UNIT_ID, u_int);
 
 }//namespace das lib
 
