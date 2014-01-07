@@ -17,96 +17,96 @@ namespace das_lib {
 
 typedef configio::DynamicRecord IncRecordType;
 
-template <class _Table>
+template <class Table>
 class IBaseLoadStrategy {
 public:
     virtual ~IBaseLoadStrategy() = 0;
-    virtual bool init(_Table &table) = 0;
-    virtual bool before_load(_Table &table) = 0;
-    virtual bool load(_Table &table) = 0;
-    virtual bool after_load(_Table &table) = 0;
-    virtual IBaseLoadStrategy *clone(TableGroup *p_table_group) const = 0;
+    virtual bool init(Table &table) = 0;
+    virtual bool before_load(Table &table) = 0;
+    virtual bool load(Table &table) = 0;
+    virtual bool after_load(Table &table) = 0;
+    virtual IBaseLoadStrategy *clone(TableGroup *pTable_group) const = 0;
     virtual bool is_reloaded() const = 0;
 };
 
-template <class _Table>
-IBaseLoadStrategy<_Table>::~IBaseLoadStrategy()
+template <class Table>
+IBaseLoadStrategy<Table>::~IBaseLoadStrategy()
 {}
 
 
-template <class _Table>
+template <class Table>
 class IBaseUpdateStrategy {
 public:
     virtual ~IBaseUpdateStrategy() = 0;
                 
-    virtual bool init(_Table &table) = 0;
-    virtual bool update(_Table &table, const IncRecordType &) = 0;
+    virtual bool init(Table &table) = 0;
+    virtual bool update(Table &table, const IncRecordType &) = 0;
     virtual IBaseUpdateStrategy *clone() const = 0;
 };
 
-template <class _Table>
-IBaseUpdateStrategy<_Table>::~IBaseUpdateStrategy()
+template <class Table>
+IBaseUpdateStrategy<Table>::~IBaseUpdateStrategy()
 {}
 
-template <class _Table>
-class NebulaLoadStrategy : public IBaseLoadStrategy<_Table> {
+template <class Table>
+class NebulaLoadStrategy : public IBaseLoadStrategy<Table> {
 public:
     NebulaLoadStrategy()
     {}
 
-    virtual bool init(_Table &table);
-    virtual bool before_load(_Table &table);
-    virtual bool load(_Table &table);
-    virtual bool after_load(_Table &table);
+    virtual bool init(Table &table);
+    virtual bool before_load(Table &table);
+    virtual bool load(Table &table);
+    virtual bool after_load(Table &table);
      
-    virtual NebulaLoadStrategy *clone(TableGroup *p_table_group) const;
+    virtual NebulaLoadStrategy *clone(TableGroup *pTable_group) const;
 
     virtual bool is_reloaded() const;
 };
 
 //用于倒排的创建
-template <class _Table, class _Connector>
-class ConnectorLoadStrategy : public IBaseLoadStrategy<_Table> {
+template <class Table, class _Connector>
+class ConnectorLoadStrategy : public IBaseLoadStrategy<Table> {
 public:
 
-    typedef _Connector *(*ConnectorMaker)(_Table &table, TableGroup &table_group);
+    typedef _Connector *(*ConnectorMaker)(Table &table, TableGroup &table_group);
     ConnectorLoadStrategy(const std::string &desc,
             ConnectorMaker connector_maker,
-            TableGroup *p_table_group);
+            TableGroup *pTable_group);
 
     virtual ~ConnectorLoadStrategy();
-    virtual bool init(_Table &table);
-    virtual bool before_load(_Table &table) ;
-    virtual bool load(_Table &table);
-    virtual bool after_load(_Table &table);
-    virtual ConnectorLoadStrategy *clone(TableGroup *p_table_group) const;
+    virtual bool init(Table &table);
+    virtual bool before_load(Table &table) ;
+    virtual bool load(Table &table);
+    virtual bool after_load(Table &table);
+    virtual ConnectorLoadStrategy *clone(TableGroup *pTable_group) const;
     virtual bool is_reloaded() const;
 
 private:
 
     ConnectorLoadStrategy(const ConnectorLoadStrategy &rhs);
-    void enable_connector(_Table &table);
-    void disable_connector(_Table &table);
+    void enable_connector(Table &table);
+    void disable_connector(Table &table);
     void show_connector() const;
 
     const std::string _conn_desc;
     _Connector *_p_connector;       //own this object
     ConnectorMaker _connector_maker;
-    TableGroup *_p_table_group;    // not own this object
+    TableGroup *_pTable_group;    // not own this object
 
 };
 
-template <class _Table>
-class IncUpdateStrategy : public IBaseUpdateStrategy<_Table> {
+template <class Table>
+class IncUpdateStrategy : public IBaseUpdateStrategy<Table> {
 public:
-    typedef bool (*UpdateHandler)(_Table &table, const IncRecordType &);
+    typedef bool (*UpdateHandler)(Table &table, const IncRecordType &);
     
     explicit IncUpdateStrategy(UpdateHandler update_handler)
         : _update_handler(update_handler)
     {}
 
-    virtual bool init(_Table &table);
-    virtual bool update(_Table &table, const IncRecordType &);
+    virtual bool init(Table &table);
+    virtual bool update(Table &table, const IncRecordType &);
     virtual IncUpdateStrategy *clone() const;
     
 private:

@@ -3,6 +3,7 @@
 #include "lib_manager.h"
 //#include "nova_thread.h"
 #include <gflags/gflags.h>
+#include "com_log.h"
 
 DEFINE_int32(sleep_interval, 1, "Sleep interval after handling inc");
 DEFINE_int64(inc_rounds, 2, "Rounds of handling inc, 0 means infinite rounds");
@@ -21,70 +22,64 @@ struct conf_t {
     das_lib::LibManager bdlib;
 };
 
-#if 0
-struct inc_bd_thrd_t : public NOVA_PUBLIC_UTIL::Thread {
-    inc_bd_thrd_t(conf_t * conf) : _conf(conf)
-    {}
-    
-    void* run()
-    {
-        ul_logstat_t ls;
-        ls.spec = FLAGS_log_to_screen ? UL_LOGTTY : 0;
-        ls.to_syslog = 15;
-        ls.events = 15;
-        if (ul_openlog_r("inc_thread", &ls) < 0) {
-            FATAL_LOG("Fail to open log for inc_thread");
-        }
+void* inc_run(conf_t* conf)
+{
+    ul_logstat_t ls;
+    ls.spec = FLAGS_log_to_screen ? UL_LOGTTY : 0;
+    ls.to_syslog = 15;
+    ls.events = 15;
+    if (ul_openlog_r("inc_thread", &ls) < 0) {
+//        DL_LOG_FATAL("Fail to open log for inc_thread");
 
-        do {
-            int ret = 0;
-        
-            TRACE_LOG("Begin loading base indexes");
-            ret = _conf->bdlib.load_base_indexes(
-                FLAGS_index_conf_path.c_str(), FLAGS_index_conf_name.c_str());
-            if (ret < 0) {
-                FATAL_LOG("failed to load base index!");
-                break;
-            }
-            TRACE_LOG("End loading base indexes");
-
-
-            system("mv data/word.event.1 data/word.event.1_bak");
-            for (long i = 0; 0 == FLAGS_inc_rounds || i < FLAGS_inc_rounds; ++i) {
-                //each time
-                TRACE_LOG("Begin bdlib.handle_inc, round(%ld)", i);
-                ret = _conf->bdlib.handle_inc();
-                if(ret < 0) {
-                    WARNING_LOG("Error occurred in bdlib.handle_inc()");
-                }
-                TRACE_LOG("End bdlib.handle_inc");
-
-                if (FLAGS_sleep_interval > 0) {
-                    TRACE_LOG("Sleep for %d seconds", FLAGS_sleep_interval);
-                    sleep(FLAGS_sleep_interval);
-                }
-                system("mv data/word.event.1_bak data/word.event.1");
-            }
-        } while (0);
-
-        ul_closelog_r(0);
+        com_writelog(COMLOG_FATAL, "[%s:%s:%d]" , __FILE__, __FUNCTION__, __LINE__); 
         return NULL;
     }
-    
-    conf_t * _conf;    
-};
-#endif
 
-int main()
+    do {
+        int ret = 0;
+        
+//        DL_LOG_TRACE("Begin loading base indexes");
+        ret = conf->bdlib.load_base_indexes(
+            FLAGS_index_conf_path.c_str(), FLAGS_index_conf_name.c_str());
+        if (ret < 0) {
+//            DL_LOG_FATAL("failed to load base index!");
+            break;
+        }
+//        DL_LOG_TRACE("End loading base indexes");
+
+
+        system("mv data/word.event.1 data/word.event.1_bak");
+        for (long i = 0; 0 == FLAGS_inc_rounds || i < FLAGS_inc_rounds; ++i) {
+            //each time
+//            DL_LOG_TRACE("Begin bdlib.handle_inc, round(%ld)", i);
+            ret = conf->bdlib.handle_inc();
+            if(ret < 0) {
+//                DL_LOG_WARNING("Error occurred in bdlib.handle_inc()");
+            }
+//            DL_LOG_TRACE("End bdlib.handle_inc");
+
+            if (FLAGS_sleep_interval > 0) {
+//                DL_LOG_TRACE("Sleep for %d seconds", FLAGS_sleep_interval);
+                sleep(FLAGS_sleep_interval);
+            }
+            system("mv data/word.event.1_bak data/word.event.1");
+        }
+    } while (0);
+
+    ul_closelog_r(0);
+    return NULL;
+}
+
+int main(int argc,char** argv)
 {
-#if 0    
+    
     int ret = 0;
     conf_t conf;
 
     FLAGS_flagfile="./conf/startup/gflags.conf";
     ret = google::ParseCommandLineFlags(&argc, &argv, true);
     if (ret < 0) {
-        FATAL_LOG("Fail to parse flags");
+//        DL_LOG_FATAL("Fail to parse flags");
         return -1;
     }
 
@@ -93,27 +88,26 @@ int main()
     ls.to_syslog = 15;
     ls.events = 15;
     if (ul_openlog("./log", FLAGS_log_prefix_name.c_str(), &ls, 100) < 0) {
-        FATAL_LOG("Fail to open log");
+///        DL_LOG_FATAL("Fail to open log");
     }
 
     if (ret < 0) {
-        FATAL_LOG ("Fail to load_conf!");
+//        DL_LOG_FATAL ("Fail to load_conf!");
         return -1;
     }
 
     ret = conf.bdlib.init ();
     if (! ret ) {
-        FATAL_LOG ("Fail to init bdlib!");
+//        DL_LOG_FATAL ("Fail to init bdlib!");
         return -1;
     }
     
-    TRACE_LOG("Create inc thread");
-    inc_bd_thrd_t inc_bd_thrd(&conf);
-    inc_bd_thrd.start();
-    inc_bd_thrd.join();
+//    DL_LOG_TRACE("Create inc thread");
+    
+    inc_run(&conf);
         
     ul_closelog(0);
-#endif    
+    
     return 0;
 }
 

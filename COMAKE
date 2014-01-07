@@ -20,6 +20,9 @@ CONFIGS('app/ecom/cm/utility@ci', IncludePaths('output/include'))
 CONFIGS('app/ecom/cm/interface@ci', IncludePaths('output/include'))
 CONFIGS('app/ecom/nova/afs/smalltable@smalltable_1-0-0-7_PD_BL')
 CONFIGS('app/ecom/nova/afs/config-io@config-io_1-0-0-17_PD_BL@COMAKE')
+CONFIGS('app/ecom/nova/thirdparty/gflags@gflags_1-0-0-0_PD_BL',Libraries('./output/lib/libgflags.a'))
+CONFIGS('public/ub@ub_1-2-42-0_PD_BL')
+CONFIGS('app/ecom/cm/global@trunk', DisBuild())
 
 StaticLibrary('lib-main', Sources(GLOB('./*.cpp')), HeaderFiles(GLOB('./*.h *.hpp')), HeaderOutputPath('output/include/snlib'))
 

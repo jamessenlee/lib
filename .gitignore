@@ -6,3 +6,5 @@ Makefile
 .svn*
 *.a
 *.o
+*.swp
+*.swo

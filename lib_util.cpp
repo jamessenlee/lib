@@ -4,7 +4,7 @@
 namespace das_lib {
 
 int get_and_check_uint32(const configio::DynamicRecord &record,
-        int index, const bsl::string &name, uint32_t &value,
+        int index, const std::string &name, uint32_t &value,
         uint32_t min_value, uint32_t max_value,
         int vindex, configio::IMessage *parent)
 {
@@ -22,7 +22,7 @@ int get_and_check_uint32(const configio::DynamicRecord &record,
 }
 
 int get_and_check_uint64(const configio::DynamicRecord &record,
-        int index, const bsl::string &name, unsigned long long &value,
+        int index, const std::string &name, unsigned long long &value,
         unsigned long long min_value, unsigned long long max_value)
 {
     if (0 != record.get_uint64(index, value)) {
@@ -39,7 +39,7 @@ int get_and_check_uint64(const configio::DynamicRecord &record,
 }
 
 int get_and_check_int64(const configio::DynamicRecord &record,
-        int index, const bsl::string &name, long long &value,
+        int index, const std::string &name, long long &value,
         long long min_value, long long max_value)
 {
     if (0 != record.get_int64(index, value)) {
