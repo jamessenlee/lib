@@ -1,5 +1,6 @@
 #include "table_group.h"
 #include "table_manager.hpp"
+#include "das_lib_log.h"
 
 namespace das_lib {
 
@@ -17,7 +18,7 @@ bool TableGroup::register_table_info(const table_info_t& table_info)
             table_info);
 
     if (iter != _table_group_list.end()) {
-//        FATAL_LOG("Table[%s] is already registered",table_info.p_table_mgr->desc().c_str());
+        DL_LOG_FATAL("Table[%s] is already registered",table_info.p_table_mgr->desc().c_str());
         return false;
     }
     
@@ -31,7 +32,7 @@ bool TableGroup::register_table_info(const table_info_t& table_info)
 
 TableGroup::TableGroup(const TableGroup& rhs)
 {
-//    FATAL_LOG("in copy constructor");
+    DL_LOG_FATAL("in copy constructor");
     TableRegisteryType::const_iterator iter = 
         rhs._table_group_list.begin();
 
@@ -71,8 +72,8 @@ TableGroup& TableGroup::operator= (const TableGroup& rhs)
             register_table_info(table_info);
         }
     } else if (_table_group_list.size() != rhs._table_group_list.size()) {
-//        FATAL_LOG("in operator =, table size not equal,[%lu]!=[%lu]",
-//                _table_group_list.size(),rhs._table_group_list.size());
+        DL_LOG_FATAL("in operator =, table size not equal,[%lu]!=[%lu]",
+                _table_group_list.size(),rhs._table_group_list.size());
         return *this;
     }
     
@@ -83,14 +84,14 @@ TableGroup& TableGroup::operator= (const TableGroup& rhs)
 
     while (iter != _table_group_list.end() && rhs_iter != rhs._table_group_list.end()) {
         if (iter->table_name != rhs_iter->table_name) {
-//            FATAL_LOG("table name not equal,[%s] != [%s]",
-//                    iter->table_name.c_str(),rhs_iter->table_name.c_str());
+            DL_LOG_FATAL("table name not equal,[%s] != [%s]",
+                    iter->table_name.c_str(),rhs_iter->table_name.c_str());
             return *this;
         }
 
         if (iter->p_table_mgr == NULL) {
-//            FATAL_LOG("Null pointer of iter table mgr,name[%s]",
-//                    iter->table_name.c_str());
+            DL_LOG_FATAL("Null pointer of iter table mgr,name[%s]",
+                    iter->table_name.c_str());
             return *this;
         }
 
@@ -106,12 +107,12 @@ TableGroup& TableGroup::operator= (const TableGroup& rhs)
 bool TableGroup::register_table(IBaseTableManager* table,int inc_level)
 {
     if (table == NULL) {
-//        FATAL_LOG("Null pointer of table");
+        DL_LOG_FATAL("Null pointer of table");
         return false;
     }
     
     if (inc_level <MIN_INC_LEVEL || inc_level >= MAX_INC_LEVEL) {
-//        FATAL_LOG("Invalid inc level[%d]",inc_level);
+        DL_LOG_FATAL("Invalid inc level[%d]",inc_level);
         return false;
     }
     
@@ -136,7 +137,7 @@ bool TableGroup::init()
          
         ret |= iter->p_table_mgr->init();
         if (!ret) {
-//            FATAL_LOG("Init table[%s] failed",iter->table_name.c_str());
+            DL_LOG_FATAL("Init table[%s] failed",iter->table_name.c_str());
         }
     }
 
@@ -152,7 +153,7 @@ bool TableGroup::load()
     for (iter = _table_group_list.begin(); iter != _table_group_list.end(); ++iter) {
         ret = iter->p_table_mgr->before_load();
         if (!ret) {
-//            FATAL_LOG("Before load table[%s] failed",iter->table_name.c_str());
+            DL_LOG_FATAL("Before load table[%s] failed",iter->table_name.c_str());
             break;
         }
     }
@@ -160,7 +161,7 @@ bool TableGroup::load()
     for (iter = _table_group_list.begin(); iter != _table_group_list.end(); ++iter) {
         ret = iter->p_table_mgr->load();
         if (!ret) {
-//            FATAL_LOG("Load table[%s] failed",iter->table_name.c_str());
+            DL_LOG_FATAL("Load table[%s] failed",iter->table_name.c_str());
             break;
         }
     }
@@ -168,7 +169,7 @@ bool TableGroup::load()
      for (iter = _table_group_list.begin(); iter != _table_group_list.end(); ++iter) {
         ret = iter->p_table_mgr->after_load();
         if (!ret) {
-//            FATAL_LOG("after Load table[%s] failed",iter->table_name.c_str());
+            DL_LOG_FATAL("after Load table[%s] failed",iter->table_name.c_str());
             break;
         }
     }
@@ -205,7 +206,7 @@ bool TableGroup::reload()
         ret |= table_iter->p_table_mgr->update(inc);
 
         if (!ret) {
-            FATAL_LOG("Reload table[%s] failed",table_iter->table_name.c_str());
+            DL_LOG_FATAL("Reload table[%s] failed",table_iter->table_name.c_str());
         }
     }
 */
@@ -225,18 +226,18 @@ bool TableGroup::handle_inc(IncRecordType & inc)
         _inc_schedule_info.find(level);
 
     if (inc_iter == _inc_schedule_info.end()) {
-//        FATAL_LOG("No table for handling inc");
+        DL_LOG_FATAL("No table for handling inc");
         //找不到对应层级增量处理的类
         return true;
     }
 
     TableRegisteryType::iterator table_iter = inc_iter->second.begin();
     for (; table_iter != inc_iter->second.end(); ++ table_iter) {
-//        FATAL_LOG("hahaahah desc[%s]",table_iter->p_table_mgr->desc().c_str());
+        DL_LOG_FATAL("hahaahah desc[%s]",table_iter->p_table_mgr->desc().c_str());
         ret |= table_iter->p_table_mgr->update(inc);
 
         if (!ret) {
-//            FATAL_LOG("Handle inc for table[%s] failed",table_iter->table_name.c_str());
+            DL_LOG_FATAL("Handle inc for table[%s] failed",table_iter->table_name.c_str());
         }
     }
 
@@ -258,7 +259,7 @@ IBaseTableManager* TableGroup::mutable_table_manager(const std::string& name)
                 table_info);
 
     if(iter == _table_group_list.end()) {
-//        FATAL_LOG("fail to find table manager %s", name.c_str());
+        DL_LOG_FATAL("fail to find table manager %s", name.c_str());
         return NULL;
     }
     
@@ -275,7 +276,7 @@ bool LibManager::init()
     
     pos = _vm_tg.create_version();
     if (pos < 0) {
-        FATAL_LOG("Failed to create table group verion");
+        DL_LOG_FATAL("Failed to create table group verion");
         return false;
     }
 
@@ -283,7 +284,7 @@ bool LibManager::init()
 //
     ret = _vm_tg[pos].init();
     if (ret < 0) {
-        FATAL_LOG("Init table group version manager failed");
+        DL_LOG_FATAL("Init table group version manager failed");
     }
     
     _vm_tg.freeze_version(pos);
@@ -296,7 +297,7 @@ bool LibManager::load()
     int pos = -1;
     pos = _vm_tg.create_version();
     if (pos < 0) {
-        FATAL_LOG("Failed to create table group verion");
+        DL_LOG_FATAL("Failed to create table group verion");
         return false;
     }
 
@@ -312,7 +313,7 @@ bool LibManager::handle_inc()
     int pos = -1;
     pos = _vm_tg.create_version();
     if (pos < 0) {
-        FATAL_LOG("Failed to create table group verion");
+        DL_LOG_FATAL("Failed to create table group verion");
         return false;
     }
 

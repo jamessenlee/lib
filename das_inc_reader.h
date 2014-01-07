@@ -10,8 +10,7 @@
 #include <dirent.h>
 #include "configio.h"
 
-namespace nova {
-namespace bs {
+namespace das_lib {
 struct normal_inc_conf_t {
     std::string configio_xml_path;
     unsigned long long last_event_id;
@@ -110,8 +109,7 @@ private:
     std::string _desc;
 };
 
-}//bs
-}//nova
+}//das lib
 
 
 #endif // _DAS_INC_READER_H_

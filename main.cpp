@@ -31,7 +31,6 @@ void* inc_run(conf_t* conf)
     if (ul_openlog_r("inc_thread", &ls) < 0) {
 //        DL_LOG_FATAL("Fail to open log for inc_thread");
 
-        com_writelog(COMLOG_FATAL, "[%s:%s:%d]" , __FILE__, __FUNCTION__, __LINE__); 
         return NULL;
     }
 

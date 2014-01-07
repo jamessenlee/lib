@@ -31,7 +31,7 @@ TableManager<Table>::~TableManager()
 }
 
 template<class Table>
-const std::string& TableManager<Table>:: desc() const
+const std::string& TableManager<Table>::desc() const
 {
     return _desc;
 }

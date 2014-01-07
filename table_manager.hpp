@@ -4,7 +4,6 @@
 #include "table_defs.h"
 #include "table_strategy.hpp"
 
-// forward declaration for IBaseUpdateStrategy::IncRecordType 
 namespace configio {
 class DynamicRecord;
 }
@@ -57,13 +56,12 @@ public:
     virtual TableManager &operator=(const IBaseTableManager &rhs);
 
     virtual bool is_reloaded() const;
-    virtual const std::string &desc();
+    virtual const std::string &desc() const;
     virtual size_t get_mem() const;
     virtual size_t table_size() const ;
 
     Table *mutable_table();
     const Table &get_table() const;
-    const std::string& desc() const;
 
     void serialize() ;
     

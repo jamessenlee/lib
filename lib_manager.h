@@ -52,7 +52,7 @@ private:
     PartitionArg _partition_arg;
 
     // nebula das inc
-    nova::bs::IndexReader _inc_readers; 
+    IndexReader _inc_readers; 
 };
 
 }  // namespace afs

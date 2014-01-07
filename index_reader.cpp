@@ -7,8 +7,7 @@
 
 #include "index_reader.h"
 
-namespace nova {
-namespace bs {
+namespace das_lib {
 
 const int IndexReader::read_next(configio::DynamicRecord &record) {
 
@@ -16,7 +15,7 @@ const int IndexReader::read_next(configio::DynamicRecord &record) {
         int ret = _reader_it->second.read_next(record);
         switch (ret) {
         case -1: 
-            FATAL_LOG("fail to read next das inc");
+            printf("fail to read next das inc");
             _reader_it = _reader.begin();
             return READ_FAIL; 
         case 0:
@@ -25,7 +24,7 @@ const int IndexReader::read_next(configio::DynamicRecord &record) {
             ++_reader_it;
             continue;
         default:
-            FATAL_LOG("fail to read next das inc");
+            printf("fail to read next das inc");
             _reader_it = _reader.begin();
             return READ_FAIL; 
         }
@@ -53,7 +52,7 @@ const int IndexReader::log_index_info() {
     for (; info_it != index_info.end(); ++info_it) {
         std::vector<topic_reader_info_t>::iterator reader_it = info_it->reader_infos.begin();
         for (; reader_it != info_it->reader_infos.end(); ++reader_it) {
-            WARNING_LOG("topic_name:%s, current file:%s,current line:%llu", 
+            printf("topic_name:%s, current file:%s,current line:%llu", 
                 info_it->topic_name.c_str(), reader_it->cur_file.c_str(), reader_it->cur_line);
         }
     }
@@ -73,6 +72,5 @@ const IndexReader::_InfoIndex IndexReader::get_index_info() {
     return index_info;
 }
 
-} // bs
 }//nova
 

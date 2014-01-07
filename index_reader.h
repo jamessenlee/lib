@@ -11,8 +11,7 @@
 
 #include "das_inc_reader.h"
 
-namespace nova {
-namespace bs {
+namespace das_lib {
 class IndexReader {
 public:
     IndexReader(){}
@@ -28,7 +27,7 @@ public:
     const int subscribe_topic(std::string topic_name, Conf_t conf) {
         int ret = _reader[topic_name].init(conf);
         if (0 != ret) {
-            FATAL_LOG("fail to init das_inc_reader");
+            printf("fail to init das_inc_reader");
             return -1;
         }
         _reader_it = _reader.begin();
@@ -49,7 +48,6 @@ private:
     _IndexReader::iterator _reader_it;
 };
 
-} // bs
 }//nova
 
 #endif

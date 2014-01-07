@@ -24,7 +24,7 @@ CONFIGS('app/ecom/nova/thirdparty/gflags@gflags_1-0-0-0_PD_BL',Libraries('./outp
 CONFIGS('public/ub@ub_1-2-42-0_PD_BL')
 CONFIGS('app/ecom/cm/global@trunk', DisBuild())
 
-StaticLibrary('lib-main', Sources(GLOB('./*.cpp')), HeaderFiles(GLOB('./*.h *.hpp')), HeaderOutputPath('output/include/snlib'))
+Application('lib-main', Sources(GLOB('./*.cpp')), HeaderFiles(GLOB('./*.h *.hpp')), HeaderOutputPath('output/include/snlib'))
 
 #¾²Ì¬¼ì²é
 RUNCCP('ccheck', CCPSources(GLOB('./*.h ./*.cpp')))

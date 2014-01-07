@@ -1,6 +1,6 @@
-namespace das_lib {
-
 #include "das_lib_log.h"
+
+namespace das_lib {
     
 template <class Table>
 bool NebulaLoadStrategy<Table>::init(Table &)

@@ -5,8 +5,8 @@
 #include "das_inc_reader.h"
 #include "cm_utility/string_utils.h"
 
-namespace nova {
-namespace bs {
+namespace das_lib {
+
 DASIncReader::DASIncReader()
     : _max_lines_per_round(-1)
     , _cur_lines(0)
@@ -34,28 +34,28 @@ int DASIncReader::init(const normal_inc_conf_t &conf)
     
     configio::InputObject *reader = new (std::nothrow) configio::InputObject();
     if (NULL == reader) {
-        FATAL_LOG("fail to create InputObject, conf[%s].",
+        printf("fail to create InputObject, conf[%s].",
                 conf.configio_xml_path.c_str());
         return -1;
     }
 
     ret = reader->init(conf.configio_xml_path.c_str());
     if (0 != ret) {
-        FATAL_LOG("fail to init InputObject, conf[%s].",
+        printf("fail to init InputObject, conf[%s].",
                 conf.configio_xml_path.c_str());
         return -1;
     }
     // open and seek.
     ret = reader->open();
     if (0 != ret) {
-        FATAL_LOG("fail to open InputObject, conf[%s].",
+        printf("fail to open InputObject, conf[%s].",
                 conf.configio_xml_path.c_str());
         return -1;
     }
 
     ret = reader->seek(&conf.last_event_id, sizeof(conf.last_event_id));
     if (ret < 0) {
-        FATAL_LOG("fail to seek to event_id[%llu], conf[%s], ret[%d].",
+        printf("fail to seek to event_id[%llu], conf[%s], ret[%d].",
                 conf.last_event_id, conf.configio_xml_path.c_str(),ret);
         return -1;
     }
@@ -69,7 +69,7 @@ int DASIncReader::init(const normal_inc_conf_t &conf)
 
     // check if there is any matching files in reader dir.
     if (0 != check_matching_files()) {
-        FATAL_LOG("fail to get matching files, conf[%s].",
+        printf("fail to get matching files, conf[%s].",
                 conf.configio_xml_path.c_str());
         return -1;
     }
@@ -89,14 +89,14 @@ int DASIncReader::init(const das_base_conf_t &conf)
 
     configio::InputObject *reader = new (std::nothrow) configio::InputObject();
     if (NULL == reader) {
-        FATAL_LOG("fail to create InputObject, conf[%s].",
+        printf("fail to create InputObject, conf[%s].",
                 conf.configio_xml_path.c_str());
         return -1;
     }
 
     ret = reader->init(conf.configio_xml_path.c_str());
     if (0 != ret) {
-        FATAL_LOG("fail to init InputObject, conf[%s].",
+        printf("fail to init InputObject, conf[%s].",
                 conf.configio_xml_path.c_str());
         return -1;
     }
@@ -108,7 +108,7 @@ int DASIncReader::init(const das_base_conf_t &conf)
             configio::READER_LITERAL_FILE_LINE_CHILD_SRC_FILE_DIR,
             (void*)&dir);
     if (0 != ret) {
-        FATAL_LOG("fail to set meta[%s] of InputObject, conf[%s].",
+        printf("fail to set meta[%s] of InputObject, conf[%s].",
                 configio::READER_LITERAL_FILE_LINE_CHILD_SRC_FILE_DIR,
                 conf.configio_xml_path.c_str());
         return -1;
@@ -117,7 +117,7 @@ int DASIncReader::init(const das_base_conf_t &conf)
     // open.    
     ret = reader->open();
     if (0 != ret) {
-        FATAL_LOG("fail to open InputObject, conf[%s].",
+        printf("fail to open InputObject, conf[%s].",
                 conf.configio_xml_path.c_str());
         return -1;
     }
@@ -132,7 +132,7 @@ int DASIncReader::init(const das_base_conf_t &conf)
     
     // check if there is any matching files in reader dir.
     if (0 != check_matching_files()) {
-        FATAL_LOG("fail to get matching files, conf[%s].", dir.c_str());
+        printf("fail to get matching files, conf[%s].", dir.c_str());
         return -1;
     }
 
@@ -153,7 +153,7 @@ int DASIncReader::init(const das_inc_conf_t &conf)
     _has_sought.clear();
     _last_event_ids.clear();
     
-    WARNING_LOG("init DASIncReader, pipelets[%zu], xml[%s]",
+    printf("init DASIncReader, pipelets[%zu], xml[%s]",
             conf.pipelets.size(), conf.configio_xml_path.c_str());
     
     for (std::vector<int>::const_iterator it = conf.pipelets.begin();
@@ -161,14 +161,14 @@ int DASIncReader::init(const das_inc_conf_t &conf)
         
         configio::InputObject *reader = new (std::nothrow) configio::InputObject();
         if (NULL == reader) {
-            FATAL_LOG("fail to create InputObject, conf[%s], pipelet[%d].",
+            printf("fail to create InputObject, conf[%s], pipelet[%d].",
                     conf.configio_xml_path.c_str(), *it);
             return -1;
         }
 
         ret = reader->init(conf.configio_xml_path.c_str());
         if (0 != ret) {
-            FATAL_LOG("fail to init InputObject, conf[%s], pipelet[%d].",
+            printf("fail to init InputObject, conf[%s], pipelet[%d].",
                     conf.configio_xml_path.c_str(), *it);
             return -1;
         }
@@ -184,7 +184,7 @@ int DASIncReader::init(const das_inc_conf_t &conf)
                 configio::READER_LITERAL_INC_FILE_CHILD_SRC_FILE_DIR,
                 (void*)&str_inc_dir);
         if (0 != ret) {
-            FATAL_LOG("fail to set meta[%s] of InputObject, conf[%s], pipelet[%d].",
+            printf("fail to set meta[%s] of InputObject, conf[%s], pipelet[%d].",
                     configio::READER_LITERAL_INC_FILE_CHILD_SRC_FILE_DIR,
                     conf.configio_xml_path.c_str(),
                     *it);
@@ -196,14 +196,14 @@ int DASIncReader::init(const das_inc_conf_t &conf)
                 configio::READER_LITERAL_INC_FILE_CHILD_SRC_FILE_PREFIX,
                 (void*)&str_inc_fname);
         if (0 != ret) {
-            FATAL_LOG("fail to set meta[%s] of InputObject, conf[%s], pipelet[%d].",
+            printf("fail to set meta[%s] of InputObject, conf[%s], pipelet[%d].",
                     configio::READER_LITERAL_INC_FILE_CHILD_SRC_FILE_PREFIX,
                     conf.configio_xml_path.c_str(),
                     *it);
             return -1;
         }
 
-        WARNING_LOG("init reader, pipelet[%d], dir[%s], file prefix[%s],"
+        printf("init reader, pipelet[%d], dir[%s], file prefix[%s],"
                 " event_id[%llu], xml[%s].",
                 *it, str_inc_dir.c_str(), str_inc_fname.c_str(),
                 conf.last_event_id, conf.configio_xml_path.c_str());
@@ -211,18 +211,18 @@ int DASIncReader::init(const das_inc_conf_t &conf)
         // open and seek.
         ret = reader->open();
         if (0 != ret) {
-            FATAL_LOG("fail to open , conf[%s], pipelet[%d].",
+            printf("fail to open , conf[%s], pipelet[%d].",
                     conf.configio_xml_path.c_str(), *it);
             return -1;
         }
 
         ret = reader->seek(&conf.last_event_id, sizeof(conf.last_event_id));
         if (ret < 0) {
-            FATAL_LOG("fail to seek to event_id[%llu], conf[%s], pipelet[%d], ret[%d].",
+            printf("fail to seek to event_id[%llu], conf[%s], pipelet[%d], ret[%d].",
                     conf.last_event_id, conf.configio_xml_path.c_str(), *it, ret);
             return -1;
         }
-        WARNING_LOG("seek to event_id[%llu], ret[%d].", conf.last_event_id, ret);
+        printf("seek to event_id[%llu], ret[%d].", conf.last_event_id, ret);
         _start_event_ids[*it] = conf.last_event_id;
         _has_sought[*it] = (0 == ret);
 
@@ -234,7 +234,7 @@ int DASIncReader::init(const das_inc_conf_t &conf)
     
     // check if there is any matching files in reader dir.
     if (0 != check_matching_files()) {
-        FATAL_LOG("fail to get matching files, conf[%s].",
+        printf("fail to get matching files, conf[%s].",
                 conf.configio_xml_path.c_str());
         return -1;
     }
@@ -252,18 +252,18 @@ int DASIncReader::check_matching_files()
         // dir.
         if (0 != it->second->get_meta_info(configio::READER_META_DIR,
                                             (void*)&dir)) {
-            FATAL_LOG("fail to get meta info[%s], pipelet[%d].",
+            printf("fail to get meta info[%s], pipelet[%d].",
                     configio::READER_META_DIR, it->first);
         }
         
         // all matching file names.
         if (0 != it->second->get_meta_info(configio::READER_META_FILE_NAMES,
                                             (void*)&fnames)) {
-            FATAL_LOG("fail to get meta info[%s], dir[%s], pipelet[%d].",
+            printf("fail to get meta info[%s], dir[%s], pipelet[%d].",
                     configio::READER_META_FILE_NAMES, dir.c_str(), it->first);
         }
         if (fnames.empty()) {
-            FATAL_LOG("fail to match any files, dir[%s], pipelet[%d].",
+            printf("fail to match any files, dir[%s], pipelet[%d].",
                     dir.c_str(), it->first);
             return -1;
         }
@@ -303,7 +303,7 @@ int DASIncReader::read_next(configio::DynamicRecord &record)
         if (_max_lines_per_round > 0 &&
             _cur_lines == _max_lines_per_round) {
             // 读取了足够的行数，切换到下一个reader
-            WARNING_LOG("read enough lines[%d], max lines[%d], reader[%d]",
+            printf("read enough lines[%d], max lines[%d], reader[%d]",
                     _cur_lines, _max_lines_per_round, _rit->first);
             ++_rit;
             _cur_lines = 0;
@@ -317,7 +317,7 @@ int DASIncReader::read_next(configio::DynamicRecord &record)
             ret = _rit->second->seek(&start_event_id, sizeof(start_event_id));
             
             if(ret != 0 && ret != 1) {
-                FATAL_LOG("fail to seek to event_id[%llu], pipelet[%d], ret[%d].",
+                printf("fail to seek to event_id[%llu], pipelet[%d], ret[%d].",
                         start_event_id, _rit->first, ret);
                 return -1;
             }
@@ -341,12 +341,12 @@ int DASIncReader::read_next(configio::DynamicRecord &record)
             // check event id.
             ret = record.get_uint64(1, cur_event_id);
             if (0 != ret) {
-                FATAL_LOG("fail to get event id from record");
+                printf("fail to get event id from record");
                 return -1;
             }
 
             if (cur_event_id < _last_event_ids[_rit->first]) {
-                FATAL_LOG("current_event_id[%llu] is less than previous[%llu]",
+                printf("current_event_id[%llu] is less than previous[%llu]",
                         cur_event_id,
                         _last_event_ids[_rit->first]);
                 return -1;
@@ -361,7 +361,7 @@ int DASIncReader::read_next(configio::DynamicRecord &record)
             _cur_lines = 0;
             continue;
         } else {
-            FATAL_LOG("fail to get next record.");
+            printf("fail to get next record.");
             continue;
         }
     } // end while
@@ -418,7 +418,7 @@ int das_inc_conf_t::init_pipelets()
 
     dir = opendir(inc_dir.c_str());
     if (NULL == dir) {
-        FATAL_LOG("fail to open dir[%s]", inc_dir.c_str());
+        printf("fail to open dir[%s]", inc_dir.c_str());
         return -1;
     }
     
@@ -431,7 +431,7 @@ int das_inc_conf_t::init_pipelets()
         cm_utility::string_appendf(&cur_fname,"%s/%s", inc_dir.c_str(), dirt->d_name);
 
         if (0 != stat(cur_fname.c_str(), &st)) {
-            FATAL_LOG("fail to get stat of file[%s]", cur_fname.c_str());
+            printf("fail to get stat of file[%s]", cur_fname.c_str());
             return -1;
         }
 
@@ -447,5 +447,4 @@ int das_inc_conf_t::init_pipelets()
     return 0;
 }
 
-}//bs
-}//nova
+}//das lib
