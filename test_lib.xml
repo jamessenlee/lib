@@ -1,0 +1,49 @@
+<InputObject name="IncForCTFeature">
+    <Metadata>
+        <DataLength>800</DataLength>
+    </Metadata>
+    <Reader name="IncFileReader" type="LiteralIncFile">
+        <SourceFileDir>./data</SourceFileDir>
+        <SourceFilePrefix>word.event</SourceFilePrefix>
+        <SourceFileSeparator>.</SourceFileSeparator>
+        <IndexColumn>1</IndexColumn>
+        <ColumnSeparator>\t</ColumnSeparator>
+        <Encoding>latin1</Encoding>
+        <MinLines>6</MinLines>
+        <MaxLines>6</MaxLines> 
+    </Reader>
+    <Records>
+        <Record name="CTFeatureInsert" index="1" sep="\t">
+            <Filter name="op_type_inert">
+                <Condition name="condition1" type="ColumnCompare">
+                    <Index>2</Index>
+                    <DataType>uint32</DataType>
+                    <CompareType>Equal</CompareType>
+                    <Value>1</Value>
+                </Condition>
+            </Filter>
+
+            <Element name="event_id" index="1" data_type="uint64" label="required" />
+            <Element name="op_type" index="2" data_type="uint32" label="required" />
+            <Element name="unit_id" index="3" data_type="uint32" label="required" />
+            <Element name="plan_id" index="4" data_type="uint32" label="required"/>
+        </Record>
+
+        <Record name="CTFeatureDelSentry" index="1" sep="\t">
+            <Filter name="op_type_del_sentry">
+                <Condition name="condition1" type="ColumnCompare">
+                    <Index>2</Index>
+                    <DataType>uint32</DataType>
+                    <CompareType>Equal</CompareType>
+                    <Value>2</Value>
+                </Condition>
+            </Filter>
+
+            <Element name="event_id" index="1" data_type="uint64" label="required" />
+            <Element name="op_type" index="2" data_type="uint32" label="required" />
+            <Element name="unit_id" index="3" data_type="uint32" label="required" />
+            <Element name="plan_id" index="4" data_type="uint32" label="required" />
+        </Record>
+    </Records>
+</InputObject>
+
