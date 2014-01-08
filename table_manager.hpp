@@ -26,10 +26,10 @@ public:
     virtual IBaseTableManager *clone(TableGroup *pTable_group) const = 0;
     virtual IBaseTableManager &operator=(const IBaseTableManager &) = 0;
 
-    virtual bool is_reloaded() const = 0;
     virtual size_t get_mem() const = 0;
     virtual const std::string &desc() const = 0;
     virtual size_t table_size() const = 0;
+    virtual void set_table_group(TableGroup* tg) = 0;
     
 protected:
     
@@ -55,10 +55,10 @@ public:
     virtual TableManager *clone(TableGroup *pTable_group) const;
     virtual TableManager &operator=(const IBaseTableManager &rhs);
 
-    virtual bool is_reloaded() const;
     virtual const std::string &desc() const;
     virtual size_t get_mem() const;
     virtual size_t table_size() const ;
+    virtual void set_table_group(TableGroup* table_group) ;
 
     Table *mutable_table();
     const Table &get_table() const;
@@ -75,7 +75,7 @@ private:
     const std::string _desc;
     IBaseLoadStrategy<Table> *_p_load_strategy;     //own this object
     IBaseUpdateStrategy<Table> *_p_update_strategy; //own this object
-    TableGroup *_pTable_group;    //not own this object
+    TableGroup *_p_table_group;    //not own this object
 };
 
 } //namespace das lib

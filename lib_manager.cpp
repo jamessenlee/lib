@@ -139,51 +139,6 @@ bool test_update_handler(TestUnitPlanTable &table, const IncRecordType &record)
     return true;
 }
 
-bool refresh_unit_exp_table(TestUnitTable &table, TableGroup &table_group)
-{
-    TableManager<TestUnitTable> *p_unit_tm =
-            table_group.cast_mutable_table_manager<TableManager<TestUnitTable> >("unit_table");
-    if (NULL == p_unit_tm) {
-        return false;
-    }
-    const TestUnitTable &unit_table = p_unit_tm->get_table();
-    
-    TableManager<TestUnitTable> *p_inverted_tm =
-            table_group.cast_mutable_table_manager<TableManager<TestUnitTable> >("inv_unit_table");
-    if (NULL == p_inverted_tm) {
-        return false;
-    }
-
-    //check if reloadable table is reloaded
-    if (!p_unit_tm->is_reloaded()) {
-        TRACE_LOG("unit table has not been reloaded yet, bail out");
-        return true;
-    }
-
-    //disconnect inverted table's connector
-    bool ret = p_inverted_tm->before_load(); 
-
-    //load exp table
-    //clear first
-    if (table.empty()) {
-        table.resize(unit_table.key_num<UNIT_ID>());
-    } else {
-        table.clear();
-    }
-    
-    for (TestUnitTable::Iterator it = unit_table.begin(); it; ++it) {
-        u_int unit_id = it->at<UNIT_ID>();
-        if (unit_id % 2 == 0) {
-            table.insert(unit_id);
-        }
-    }
-
-    //enable connector
-    ret = p_inverted_tm->after_load(); 
-
-    return true;
-}
-
 TestUnitCon *unit_plan_exp_connector_maker(TestUnitTable &inv_table, TableGroup &table_group)
 {
     TestUnitCon *p_connector = new(std::nothrow) TestUnitCon(
@@ -217,7 +172,6 @@ LibManager::LibManager()
 LibManager::~LibManager()
 {}
 
-// Implement Everything
 bool LibManager::init()
 {
     _partition_arg.set_partition_idx(1).set_partition_num(1);
@@ -233,29 +187,27 @@ bool LibManager::init()
         return false;
     }
 
-    ///TODO:for test
     TableGroup &table_group = _vm_tg[pos];
     bool ret_b = false;
 
-
-#define NEW_AND_REGISTER_TABLE(type, name, load_strategy, update_strategy, level, table_group)    \
-    TableManager<type> * name =                             \
+#define NEW_AND_REGISTER_TABLE(type, name, load_strategy, update_strategy, level, table_group)                                                  \
+    TableManager<type> * name =                                     \
         new(std::nothrow) TableManager<type>(   #name,              \
                                                 load_strategy,      \
                                                 update_strategy,    \
-                                                &(table_group));      \
-    if (NULL == name) {                                     \
+                                                &(table_group));    \
+    if (NULL == name) {                                             \
         return false;                                               \
     }                                                               \
-    ret_b = table_group.register_table(name, level);         \
-    if (!ret_b) {                                                     \
+    ret_b = table_group.register_table(name, level);                \
+    if (!ret_b) {                                                   \
         return false;                                               \
     }
     
 
     //add tables
     IBaseLoadStrategy<TestUnitPlanTable> *p_load_strategy = 
-        new(std::nothrow) NebulaLoadStrategy<TestUnitPlanTable>();
+        new(std::nothrow) LiteralBaseLoadStrategy<TestUnitPlanTable>();
     if(NULL == p_load_strategy) {
         DL_LOG_FATAL("fail to allocate load strategy");
         return false;
@@ -269,7 +221,7 @@ bool LibManager::init()
                            DEFAULT_LEVEL, table_group);
     
     IBaseLoadStrategy<TestUnitTable> *p_test_unit_load_strategy = 
-        new(std::nothrow) NebulaLoadStrategy<TestUnitTable>();
+        new(std::nothrow) LiteralBaseLoadStrategy<TestUnitTable>();
     if(NULL == p_test_unit_load_strategy) {
         DL_LOG_FATAL("fail to allocate load strategy");
         return false;
@@ -279,7 +231,7 @@ bool LibManager::init()
                            RELOAD_LEVEL, table_group);
 
     p_test_unit_load_strategy = 
-        new(std::nothrow) NebulaLoadStrategy<TestUnitTable>();
+        new(std::nothrow) LiteralBaseLoadStrategy<TestUnitTable>();
     if(NULL == p_test_unit_load_strategy) {
         DL_LOG_FATAL("fail to allocate load strategy");
         return false;
@@ -303,6 +255,7 @@ bool LibManager::init()
     NEW_AND_REGISTER_TABLE(TestUnitTable, inv_unit_table, p_test_unit_load_strategy, NULL, 
                            RELOAD_LEVEL, table_group);
 
+#undef NEW_AND_REGISTER_TABLE
 
     ret = _vm_tg[pos].init();
     if (ret < 0) {

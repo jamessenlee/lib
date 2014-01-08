@@ -1,4 +1,5 @@
 #include "lib_util.h"
+#include "lib_dump.hpp"
 
 namespace das_lib {
 
@@ -6,11 +7,11 @@ template <class Table>
 TableManager<Table>::TableManager(const std::string &desc,
                     IBaseLoadStrategy<Table> *p_load_strategy,
                     IBaseUpdateStrategy<Table> *p_update_strategy,
-                    TableGroup *pTable_group)
+                    TableGroup *p_table_group)
         : _desc(desc)
         , _p_load_strategy(p_load_strategy)
         , _p_update_strategy(p_update_strategy)
-        , _pTable_group(pTable_group)
+        , _p_table_group(p_table_group)
 {
         DL_LOG_TRACE("%s", _desc.c_str());
 }
@@ -30,6 +31,12 @@ TableManager<Table>::~TableManager()
         _p_update_strategy = NULL;
     }
         
+}
+
+template<class Table>
+void TableManager<Table>::set_table_group(TableGroup* tg)
+{
+    _p_table_group = tg;
 }
 
 template<class Table>
@@ -65,12 +72,20 @@ const Table &TableManager<Table>::get_table() const
 template <class Table>
 void TableManager<Table>::serialize()
 {
-//    Serializer s;
-//    std::string dump_name = "dump_";
+    std::ofstream ofs;
     
-//    s.set_target((dump_name + _desc + "_" ).c_str());
- 
-//    dumpTable(&Table,s,_desc.c_str());
+    std::string file_prefix("dump_");
+    std::string file_name = file_prefix + _desc;
+    
+    ofs.open(file_name.c_str() );                                          
+    if( !ofs.is_open()  ) {                                                
+        DL_LOG_FATAL("dump open file failed, file:%s",file_name.c_str()); 
+        return ;
+    }
+    
+    dump_table(&_table,ofs,_desc.c_str());
+
+    ofs.close();
 }
 
 template <class Table>
@@ -80,7 +95,7 @@ TableManager<Table>::TableManager(const TableManager &rhs)
     , _desc(rhs._desc)
     , _p_load_strategy(NULL)
     , _p_update_strategy(NULL)
-    , _pTable_group(NULL)
+    , _p_table_group(NULL)
 {
     //note that we should not copy any pointers here;
 }
@@ -108,7 +123,7 @@ TableManager<Table> &TableManager<Table>::operator=(const IBaseTableManager &rhs
 
 template <class Table>
 TableManager<Table> *
-TableManager<Table>::clone(TableGroup *pTable_group) const
+TableManager<Table>::clone(TableGroup *p_table_group) const
 {
     TableManager<Table> *p_tm = new(std::nothrow) TableManager<Table>(*this);
     if (NULL == p_tm) {
@@ -116,10 +131,10 @@ TableManager<Table>::clone(TableGroup *pTable_group) const
         return NULL;
     }
 
-    p_tm->_pTable_group = pTable_group;
+    p_tm->_p_table_group = p_table_group;
 
     if (NULL != _p_load_strategy) {
-        p_tm->_p_load_strategy = _p_load_strategy->clone(pTable_group);
+        p_tm->_p_load_strategy = _p_load_strategy->clone(p_table_group);
         if (NULL == p_tm->_p_load_strategy) {
             DL_LOG_FATAL("fail to clone load strategy for %s", _desc.c_str());
             delete p_tm;
@@ -194,7 +209,7 @@ bool TableManager<Table>::load()
         return false;
     }
     tm.stop();
-    DL_LOG_WARNING("Loaded %s: %lums (%luns per item)",
+    DL_LOG_TRACE("Loaded %s: %lums (%luns per item)",
                 _desc.c_str(),
                 tm.m_elapsed(),
                 tm.n_elapsed() / never_zero(_table.size()));
@@ -245,18 +260,6 @@ bool TableManager<Table>::after_load()
 
     return ret;
 }
-
-template <class Table>
-bool TableManager<Table>::is_reloaded() const
-{
-    if (NULL == _p_load_strategy) {
-        DL_LOG_FATAL("load strategy of %s is NULL", _desc.c_str());
-        return false;
-    }
-
-    return _p_load_strategy->is_reloaded();
-}
-
 
 } //namespace das lib
 

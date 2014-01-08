@@ -10,7 +10,7 @@ class DynamicRecord;
  
 //管理类的前向声明
 namespace das_lib {
-    class TableGroup;
+class TableGroup;
 }
 
 namespace das_lib {
@@ -26,13 +26,56 @@ public:
     virtual bool load(Table &table) = 0;
     virtual bool after_load(Table &table) = 0;
     virtual IBaseLoadStrategy *clone(TableGroup *pTable_group) const = 0;
-    virtual bool is_reloaded() const = 0;
 };
 
 template <class Table>
 IBaseLoadStrategy<Table>::~IBaseLoadStrategy()
 {}
 
+
+template <class Table>
+class LiteralBaseLoadStrategy : public IBaseLoadStrategy<Table> {
+public:
+    LiteralBaseLoadStrategy();
+
+    virtual bool init(Table &table);
+    virtual bool before_load(Table &table);
+    virtual bool load(Table &table);
+    virtual bool after_load(Table &table);
+     
+    virtual LiteralBaseLoadStrategy *clone(TableGroup *pTable_group) const;
+};
+
+//用于倒排的创建
+template <class Table, class Connector>
+class ConnectorLoadStrategy : public IBaseLoadStrategy<Table> {
+public:
+
+    typedef Connector *(*ConnectorMaker)(Table &table, TableGroup &table_group);
+    ConnectorLoadStrategy(const std::string &desc,
+            ConnectorMaker connector_maker,
+            TableGroup *pTable_group);
+
+    virtual ~ConnectorLoadStrategy();
+    virtual bool init(Table &table);
+    virtual bool before_load(Table &table) ;
+    virtual bool load(Table &table);
+    virtual bool after_load(Table &table);
+    virtual ConnectorLoadStrategy *clone(TableGroup *pTable_group) const;
+
+private:
+
+    ConnectorLoadStrategy(const ConnectorLoadStrategy &rhs);
+    void enable_connector(Table &table);
+    void disable_connector(Table &table);
+    void show_connector() const;
+
+    const std::string _conn_desc;
+    Connector *_p_connector;       //own this object
+    ConnectorMaker _connector_maker;
+    TableGroup *_pTable_group;    // not own this object
+
+};
 
 template <class Table>
 class IBaseUpdateStrategy {
@@ -44,57 +87,7 @@ public:
     virtual IBaseUpdateStrategy *clone() const = 0;
 };
 
-template <class Table>
-IBaseUpdateStrategy<Table>::~IBaseUpdateStrategy()
-{}
 
-template <class Table>
-class NebulaLoadStrategy : public IBaseLoadStrategy<Table> {
-public:
-    NebulaLoadStrategy()
-    {}
-
-    virtual bool init(Table &table);
-    virtual bool before_load(Table &table);
-    virtual bool load(Table &table);
-    virtual bool after_load(Table &table);
-     
-    virtual NebulaLoadStrategy *clone(TableGroup *pTable_group) const;
-
-    virtual bool is_reloaded() const;
-};
-
-//用于倒排的创建
-template <class Table, class _Connector>
-class ConnectorLoadStrategy : public IBaseLoadStrategy<Table> {
-public:
-
-    typedef _Connector *(*ConnectorMaker)(Table &table, TableGroup &table_group);
-    ConnectorLoadStrategy(const std::string &desc,
-            ConnectorMaker connector_maker,
-            TableGroup *pTable_group);
-
-    virtual ~ConnectorLoadStrategy();
-    virtual bool init(Table &table);
-    virtual bool before_load(Table &table) ;
-    virtual bool load(Table &table);
-    virtual bool after_load(Table &table);
-    virtual ConnectorLoadStrategy *clone(TableGroup *pTable_group) const;
-    virtual bool is_reloaded() const;
-
-private:
-
-    ConnectorLoadStrategy(const ConnectorLoadStrategy &rhs);
-    void enable_connector(Table &table);
-    void disable_connector(Table &table);
-    void show_connector() const;
-
-    const std::string _conn_desc;
-    _Connector *_p_connector;       //own this object
-    ConnectorMaker _connector_maker;
-    TableGroup *_pTable_group;    // not own this object
-
-};
 
 template <class Table>
 class IncUpdateStrategy : public IBaseUpdateStrategy<Table> {

@@ -3,46 +3,46 @@
 namespace das_lib {
     
 template <class Table>
-bool NebulaLoadStrategy<Table>::init(Table &)
+LiteralBaseLoadStrategy<Table>::LiteralBaseLoadStrategy()
+{   
+
+}
+    
+template <class Table>
+bool LiteralBaseLoadStrategy<Table>::init(Table &)
 {   
     return true;
 }
 
 template <class Table>
-bool NebulaLoadStrategy<Table>::before_load(Table &)
+bool LiteralBaseLoadStrategy<Table>::before_load(Table &)
 {   
     return true;
 }
 
 template <class Table>
-bool NebulaLoadStrategy<Table>::after_load(Table &)
+bool LiteralBaseLoadStrategy<Table>::after_load(Table &)
 {   
     return true;
 }
 
 template <class Table>
-bool NebulaLoadStrategy<Table>::load(Table &)
+bool LiteralBaseLoadStrategy<Table>::load(Table &)
 {   
     return true;
 }
 
 template <class Table>
-bool NebulaLoadStrategy<Table>::is_reloaded() const
-{   
-    return true;
-}
-
-template <class Table>
-NebulaLoadStrategy<Table> *
-NebulaLoadStrategy<Table>::clone(TableGroup *) const
+LiteralBaseLoadStrategy<Table> *
+LiteralBaseLoadStrategy<Table>::clone(TableGroup *) const
 {
-    DL_LOG_TRACE("NebulaLoadStrategy clone called");
-    return new (std::nothrow) NebulaLoadStrategy<Table>(*this);
+    DL_LOG_TRACE("LiteralBaseLoadStrategy clone called");
+    return new (std::nothrow) LiteralBaseLoadStrategy<Table>(*this);
 }
 
 //用于倒排的创建
-template <class Table, class _Connector>
-ConnectorLoadStrategy<Table,_Connector>::ConnectorLoadStrategy(const std::string &desc,
+template <class Table, class Connector>
+ConnectorLoadStrategy<Table,Connector>::ConnectorLoadStrategy(const std::string &desc,
             ConnectorMaker connector_maker,
             TableGroup *pTable_group)
          : _conn_desc(desc)
@@ -54,8 +54,8 @@ ConnectorLoadStrategy<Table,_Connector>::ConnectorLoadStrategy(const std::string
 
 }
 
-template <class Table, class _Connector>
-ConnectorLoadStrategy<Table,_Connector>::~ConnectorLoadStrategy()
+template <class Table, class Connector>
+ConnectorLoadStrategy<Table,Connector>::~ConnectorLoadStrategy()
 {
     DL_LOG_TRACE("%s", _conn_desc.c_str());
 
@@ -65,35 +65,29 @@ ConnectorLoadStrategy<Table,_Connector>::~ConnectorLoadStrategy()
     }
 }
 
-template <class Table, class _Connector>
-bool ConnectorLoadStrategy<Table, _Connector>::is_reloaded() const
-{
-    return false;
-}
-
-template <class Table, class _Connector>
-bool ConnectorLoadStrategy<Table, _Connector>::load(Table&)//Table &table)
+template <class Table, class Connector>
+bool ConnectorLoadStrategy<Table, Connector>::load(Table&)//Table &table)
 {
     return true;
 }
 
-template <class Table, class _Connector>
-bool ConnectorLoadStrategy<Table, _Connector>::after_load(Table &table)
+template <class Table, class Connector>
+bool ConnectorLoadStrategy<Table, Connector>::after_load(Table &table)
 {
     enable_connector(table);
     return true;
 }
 
 
-template <class Table, class _Connector>
-bool ConnectorLoadStrategy<Table, _Connector>::before_load(Table &table)
+template <class Table, class Connector>
+bool ConnectorLoadStrategy<Table, Connector>::before_load(Table &table)
 {
     disable_connector(table);
     return true;
 }
 
-template <class Table, class _Connector>
-bool ConnectorLoadStrategy<Table, _Connector>::init(Table &table)
+template <class Table, class Connector>
+bool ConnectorLoadStrategy<Table, Connector>::init(Table &table)
 {
     if (NULL == _connector_maker || NULL == _pTable_group) {
         DL_LOG_FATAL("something is NULL [%p/%p]", _connector_maker, _pTable_group);
@@ -110,17 +104,17 @@ bool ConnectorLoadStrategy<Table, _Connector>::init(Table &table)
     return true;
 }
 
-template <class Table, class _Connector>
-void ConnectorLoadStrategy<Table, _Connector>::show_connector() const 
+template <class Table, class Connector>
+void ConnectorLoadStrategy<Table, Connector>::show_connector() const 
 {
     std::ostringstream oss;
     oss.str("");
-    oss << c_show(_Connector);
+    oss << c_show(Connector);
     DL_LOG_TRACE("%s con: %s", _conn_desc.c_str(), oss.str().c_str());
 }
 
-template <class Table, class _Connector>
-void ConnectorLoadStrategy<Table, _Connector>::enable_connector(Table &table)
+template <class Table, class Connector>
+void ConnectorLoadStrategy<Table, Connector>::enable_connector(Table &table)
 {
     if (NULL == _p_connector) {
         DL_LOG_FATAL("%s has not been initialized yet", _conn_desc.c_str());
@@ -143,8 +137,8 @@ void ConnectorLoadStrategy<Table, _Connector>::enable_connector(Table &table)
             tm.n_elapsed() / never_zero(table.size()));
 }
 
-template <class Table, class _Connector>
-void ConnectorLoadStrategy<Table, _Connector>::disable_connector(Table& )//Table &table)
+template <class Table, class Connector>
+void ConnectorLoadStrategy<Table, Connector>::disable_connector(Table& )//Table &table)
 {
     if (NULL == _p_connector) {
         DL_LOG_FATAL("%s has not been initialized yet", _conn_desc.c_str());
@@ -156,8 +150,8 @@ void ConnectorLoadStrategy<Table, _Connector>::disable_connector(Table& )//Table
     _p_connector->disable_observers();
 }
 
-template <class Table, class _Connector>
-ConnectorLoadStrategy<Table, _Connector>::ConnectorLoadStrategy(const ConnectorLoadStrategy &rhs)
+template <class Table, class Connector>
+ConnectorLoadStrategy<Table, Connector>::ConnectorLoadStrategy(const ConnectorLoadStrategy &rhs)
     : IBaseLoadStrategy<Table>(rhs)
     , _conn_desc(rhs._conn_desc)
     , _p_connector(NULL)
@@ -168,17 +162,17 @@ ConnectorLoadStrategy<Table, _Connector>::ConnectorLoadStrategy(const ConnectorL
     DL_LOG_TRACE("%s", _conn_desc.c_str());
 }
 
-template <class Table, class _Connector>
-ConnectorLoadStrategy<Table, _Connector> *
-ConnectorLoadStrategy<Table, _Connector>::clone(TableGroup *pTable_group) const
+template <class Table, class Connector>
+ConnectorLoadStrategy<Table, Connector> *
+ConnectorLoadStrategy<Table, Connector>::clone(TableGroup *pTable_group) const
 {
     if (NULL == pTable_group) {
         DL_LOG_FATAL("pTable_group is NULL");
         return NULL;
     }
 
-    ConnectorLoadStrategy<Table, _Connector> *p_new_strategy = 
-        new (std::nothrow) ConnectorLoadStrategy<Table, _Connector>(*this);
+    ConnectorLoadStrategy<Table, Connector> *p_new_strategy = 
+        new (std::nothrow) ConnectorLoadStrategy<Table, Connector>(*this);
 
     if (NULL == p_new_strategy) {
         DL_LOG_FATAL("fail to allocate %s", _conn_desc.c_str());
@@ -191,6 +185,10 @@ ConnectorLoadStrategy<Table, _Connector>::clone(TableGroup *pTable_group) const
 
     return p_new_strategy;
 }
+
+template <class Table>
+IBaseUpdateStrategy<Table>::~IBaseUpdateStrategy()
+{}
 
 template <class Table>
 bool IncUpdateStrategy<Table>::init(Table&)//Table &table)
