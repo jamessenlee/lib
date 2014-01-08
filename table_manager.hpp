@@ -16,9 +16,9 @@ class IBaseTableManager {
 public:
     virtual ~IBaseTableManager(){}
     virtual bool init() = 0;
-    virtual bool before_load() = 0;
+    virtual bool pre_load() = 0;
     virtual bool load() = 0;
-    virtual bool after_load() = 0;
+    virtual bool post_load() = 0;
     virtual bool update(const IncRecordType &inc_record) = 0;
     virtual void serialize() = 0;
 
@@ -48,9 +48,9 @@ public:
     virtual ~TableManager();
 
     virtual bool init();
-    virtual bool before_load();
+    virtual bool pre_load();
     virtual bool load();
-    virtual bool after_load();
+    virtual bool post_load();
     virtual bool update(const IncRecordType &inc_record);
     virtual TableManager *clone(TableGroup *pTable_group) const;
     virtual TableManager &operator=(const IBaseTableManager &rhs);

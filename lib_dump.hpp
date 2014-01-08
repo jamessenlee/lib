@@ -4,6 +4,7 @@
 
 #include <gflags/gflags.h>
 #include <fstream>          // std::ostream
+#include "das_lib_log.h"
 
 namespace das_lib{
 
@@ -15,7 +16,7 @@ struct TupleDumpHelper< Cons<_Head, _Tail>,_Tup,_SerializerType>
     static int dump_tuple(const _Tup* tuple,_SerializerType& sz)
     {
         if (NULL == tuple) {
-            WARNING_LOG("dump tuple is NULL");
+            DL_LOG_WARNING("dump tuple is NULL");
             return -1;
         }
 
@@ -61,12 +62,12 @@ class SerializerType
 int dump_table(const TableType *table,SerializerType& sz,const char* desc)
 {
     if(NULL == table) {
-        FATAL_LOG("dump table failed due to NULL table pointer");
+        DL_LOG_FATAL("dump table failed due to NULL table pointer");
         return -1;
     }
 
     if(NULL == desc) {
-        FATAL_LOG("dump table failed due to NULL desc string");
+        DL_LOG_FATAL("dump table failed due to NULL desc string");
         return -1;
     }
 
@@ -80,7 +81,7 @@ int dump_table(const TableType *table,SerializerType& sz,const char* desc)
         const typename TableType::Tup& tuple = *it;
         ret = TupleDumpHelper<typename TableType::AttrS, typename TableType::Tup,SerializerType>::dump_tuple(&tuple ,sz);
         if(ret < 0) {
-            FATAL_LOG("dumper table tuple failed");
+            DL_LOG_FATAL("dumper table tuple failed");
             return -1;
         }
         sz << "\n";

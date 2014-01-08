@@ -152,7 +152,7 @@ bool TableGroup::load()
     TableRegisteryType::iterator iter;
 
     for (iter = _table_manager_list.begin(); iter != _table_manager_list.end(); ++iter) {
-        ret = iter->p_table_mgr->before_load();
+        ret = iter->p_table_mgr->pre_load();
         if (!ret) {
             DL_LOG_FATAL("Before load table[%s] failed",iter->table_name.c_str());
             break;
@@ -168,9 +168,9 @@ bool TableGroup::load()
     }
  
     for (iter = _table_manager_list.begin(); iter != _table_manager_list.end(); ++iter) {
-        ret = iter->p_table_mgr->after_load();
+        ret = iter->p_table_mgr->post_load();
         if (!ret) {
-            DL_LOG_FATAL("after Load table[%s] failed",iter->table_name.c_str());
+            DL_LOG_FATAL("post Load table[%s] failed",iter->table_name.c_str());
             break;
         }
     }

@@ -22,9 +22,9 @@ class IBaseLoadStrategy {
 public:
     virtual ~IBaseLoadStrategy() = 0;
     virtual bool init(Table &table) = 0;
-    virtual bool before_load(Table &table) = 0;
+    virtual bool pre_load(Table &table) = 0;
     virtual bool load(Table &table) = 0;
-    virtual bool after_load(Table &table) = 0;
+    virtual bool post_load(Table &table) = 0;
     virtual IBaseLoadStrategy *clone(TableGroup *pTable_group) const = 0;
 };
 
@@ -39,9 +39,9 @@ public:
     LiteralBaseLoadStrategy();
 
     virtual bool init(Table &table);
-    virtual bool before_load(Table &table);
+    virtual bool pre_load(Table &table);
     virtual bool load(Table &table);
-    virtual bool after_load(Table &table);
+    virtual bool post_load(Table &table);
      
     virtual LiteralBaseLoadStrategy *clone(TableGroup *pTable_group) const;
 };
@@ -58,9 +58,9 @@ public:
 
     virtual ~ConnectorLoadStrategy();
     virtual bool init(Table &table);
-    virtual bool before_load(Table &table) ;
+    virtual bool pre_load(Table &table) ;
     virtual bool load(Table &table);
-    virtual bool after_load(Table &table);
+    virtual bool post_load(Table &table);
     virtual ConnectorLoadStrategy *clone(TableGroup *pTable_group) const;
 
 private:

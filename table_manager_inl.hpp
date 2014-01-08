@@ -228,14 +228,14 @@ bool TableManager<Table>::update(const IncRecordType &inc_record)
 
 
 template <class Table>
-bool TableManager<Table>::before_load()
+bool TableManager<Table>::pre_load()
 {
     if (NULL == _p_load_strategy) {
         DL_LOG_FATAL("load strategy of %s is NULL", _desc.c_str());
         return false;
     }
 
-    bool ret = _p_load_strategy->before_load(_table);
+    bool ret = _p_load_strategy->pre_load(_table);
     if (!ret) {
         DL_LOG_FATAL("fail to reload %s", _desc.c_str());
         return false;
@@ -245,14 +245,14 @@ bool TableManager<Table>::before_load()
 }
 
 template <class Table>
-bool TableManager<Table>::after_load()
+bool TableManager<Table>::post_load()
 {
     if (NULL == _p_load_strategy) {
         DL_LOG_FATAL("load strategy of %s is NULL", _desc.c_str());
         return false;
     }
 
-    bool ret = _p_load_strategy->after_load(_table);
+    bool ret = _p_load_strategy->post_load(_table);
     if (!ret) {
         DL_LOG_FATAL("fail to reload %s", _desc.c_str());
         return false;

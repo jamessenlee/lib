@@ -15,13 +15,13 @@ bool LiteralBaseLoadStrategy<Table>::init(Table &)
 }
 
 template <class Table>
-bool LiteralBaseLoadStrategy<Table>::before_load(Table &)
+bool LiteralBaseLoadStrategy<Table>::pre_load(Table &)
 {   
     return true;
 }
 
 template <class Table>
-bool LiteralBaseLoadStrategy<Table>::after_load(Table &)
+bool LiteralBaseLoadStrategy<Table>::post_load(Table &)
 {   
     return true;
 }
@@ -72,7 +72,7 @@ bool ConnectorLoadStrategy<Table, Connector>::load(Table&)//Table &table)
 }
 
 template <class Table, class Connector>
-bool ConnectorLoadStrategy<Table, Connector>::after_load(Table &table)
+bool ConnectorLoadStrategy<Table, Connector>::post_load(Table &table)
 {
     enable_connector(table);
     return true;
@@ -80,7 +80,7 @@ bool ConnectorLoadStrategy<Table, Connector>::after_load(Table &table)
 
 
 template <class Table, class Connector>
-bool ConnectorLoadStrategy<Table, Connector>::before_load(Table &table)
+bool ConnectorLoadStrategy<Table, Connector>::pre_load(Table &table)
 {
     disable_connector(table);
     return true;
