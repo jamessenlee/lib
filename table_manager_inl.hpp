@@ -1,3 +1,5 @@
+#include "lib_util.h"
+
 namespace das_lib {
 
 template <class Table>

@@ -312,18 +312,18 @@ bool LibManager::init()
     
     _vm_tg.freeze_version(pos);
 
-    normal_inc_conf_t budget_inc_conf;
-    budget_inc_conf.configio_xml_path = "./test_lib.xml";
-    budget_inc_conf.last_event_id = 0;
-    budget_inc_conf.max_lines_per_round = 1000;
-    budget_inc_conf.pipe_name = "aaa";
-
+    //初始化增量模型
+    das_inc_conf_t das_inc_conf;
+    das_inc_conf.configio_xml_path = "./test_lib.xml";
+    das_inc_conf.last_event_id = 0;
+    das_inc_conf.max_lines_per_round = 1000;
+    das_inc_conf.pipe_name = "das_inc";
     
-    if (0 != _inc_readers.subscribe_topic(
-                    "budget_user", budget_inc_conf)) {
+    if (0 != _inc_reader.init(das_inc_conf)) {
         DL_LOG_FATAL("fail to init das_inc_reader");
         return false;
     }
+
     return true;
 }
 
@@ -360,16 +360,17 @@ bool LibManager::handle_inc()
     uint32_t count = 0;
     configio::DynamicRecord record;
 
-    ret = _inc_readers.read_next(record);
+    ret = _inc_reader.read_next(record);
     if (ret < 0) {
         DL_LOG_FATAL("fail to read next budget inc");
         return false;
-    } else if (IndexReader::READ_END == ret) {
-        DL_LOG_WARNING("No DAS inc to handle since last round");
+    } else if (DASIncReader::READ_END == ret) {
+        DL_LOG_TRACE("No DAS inc to handle since last round");
         return true;
     }
+    
     TableGroup* p_table = NULL;
-    DL_LOG_WARNING("Begin creating new version of main_table_group");
+    DL_LOG_TRACE("Begin creating new version of main_table_group");
     tm.start();
 
     int pos = _vm_tg.create_version();
@@ -380,7 +381,7 @@ bool LibManager::handle_inc()
     p_table = &_vm_tg[pos];
 
     tm.stop();
-    DL_LOG_WARNING("End creating new version of main_table_group: %lums",
+    DL_LOG_TRACE("End creating new version of main_table_group: %lums",
             tm.m_elapsed());
 
     tm.start();
@@ -399,11 +400,11 @@ bool LibManager::handle_inc()
         last_event_id = cur_eid;
 
         // get next record
-        ret = _inc_readers.read_next(record);
+        ret = _inc_reader.read_next(record);
         if (ret < 0) {
             DL_LOG_FATAL("fail to read next budget inc");
             return -1;
-        } else if (IndexReader::READ_END == ret) {
+        } else if (DASIncReader::READ_END == ret) {
             break;
         }
 
@@ -415,6 +416,5 @@ bool LibManager::handle_inc()
 
     return ret;
 }
-
 
 }  // namespace das_lib
