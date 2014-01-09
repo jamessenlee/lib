@@ -92,11 +92,17 @@ int load_test_unit_table(TestUnitTable &table, const char* fpath, const Partitio
     
 }
 
+bool test_unit_update_handler(TestUnitTable &, const IncRecordType &)
+{
+
+    return true;
+}
+
 bool test_update_handler(TestUnitPlanTable &table, const IncRecordType &record)
 {
     static int aaa = 0;
     aaa ++;
-    DL_LOG_FATAL("!!!!!!!!!!test_update_handler called aaa[%d]",aaa);
+//    DL_LOG_FATAL("!!!!!!!!!!test_update_handler called aaa[%d]",aaa);
     uint32_t event_id = 0; 
     uint32_t op_type = 0;
     uint32_t unit_id = 0;
@@ -121,8 +127,8 @@ bool test_update_handler(TestUnitPlanTable &table, const IncRecordType &record)
         DL_LOG_FATAL("Failed to get plan_id");
         return -1;
     }
-    DL_LOG_WARNING("!!![%u],[%u],[%u],[%u]",
-            event_id,op_type,unit_id,plan_id);
+//    DL_LOG_WARNING("!!![%u],[%u],[%u],[%u]",
+//            event_id,op_type,unit_id,plan_id);
     
 
     const bool ERASE_TABLE = (op_type == 2);
@@ -207,7 +213,7 @@ bool LibManager::init()
 
     //add tables
     IBaseLoadStrategy<TestUnitPlanTable> *p_load_strategy = 
-        new(std::nothrow) LiteralBaseLoadStrategy<TestUnitPlanTable>();
+        new(std::nothrow) LiteralBaseLoadStrategy<TestUnitPlanTable>("xml1",test_update_handler);
     if(NULL == p_load_strategy) {
         DL_LOG_FATAL("fail to allocate load strategy");
         return false;
@@ -221,23 +227,13 @@ bool LibManager::init()
                            DEFAULT_LEVEL, table_group);
     
     IBaseLoadStrategy<TestUnitTable> *p_test_unit_load_strategy = 
-        new(std::nothrow) LiteralBaseLoadStrategy<TestUnitTable>();
+        new(std::nothrow) LiteralBaseLoadStrategy<TestUnitTable>("xml2",test_unit_update_handler);
     if(NULL == p_test_unit_load_strategy) {
         DL_LOG_FATAL("fail to allocate load strategy");
         return false;
     }
 
     NEW_AND_REGISTER_TABLE(TestUnitTable, unit_table, p_test_unit_load_strategy, NULL, 
-                           RELOAD_LEVEL, table_group);
-
-    p_test_unit_load_strategy = 
-        new(std::nothrow) LiteralBaseLoadStrategy<TestUnitTable>();
-    if(NULL == p_test_unit_load_strategy) {
-        DL_LOG_FATAL("fail to allocate load strategy");
-        return false;
-    }
-
-    NEW_AND_REGISTER_TABLE(TestUnitTable, unit_exp_table, p_test_unit_load_strategy, NULL, 
                            RELOAD_LEVEL, table_group);
 
 

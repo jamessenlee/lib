@@ -215,7 +215,6 @@ bool TableGroup::handle_inc(IncRecordType & inc)
 
     TableRegisteryType::iterator table_iter = inc_iter->second.begin();
     for (; table_iter != inc_iter->second.end(); ++ table_iter) {
-        DL_LOG_FATAL("hahaahah desc[%s]",table_iter->p_table_mgr->desc().c_str());
         ret |= table_iter->p_table_mgr->update(inc);
 
         if (!ret) {

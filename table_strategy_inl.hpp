@@ -3,7 +3,19 @@
 namespace das_lib {
     
 template <class Table>
-LiteralBaseLoadStrategy<Table>::LiteralBaseLoadStrategy()
+LiteralBaseLoadStrategy<Table>::LiteralBaseLoadStrategy(const std::string& xml,
+        LoadHandler handler)
+    : _xml(xml)
+    , _handler(handler)
+{   
+
+}
+
+template <class Table>
+LiteralBaseLoadStrategy<Table>::LiteralBaseLoadStrategy(const LiteralBaseLoadStrategy &rhs)
+    : IBaseLoadStrategy<Table>(rhs)
+    , _xml(rhs._xml)
+    , _handler(rhs._handler)
 {   
 
 }
@@ -11,6 +23,14 @@ LiteralBaseLoadStrategy<Table>::LiteralBaseLoadStrategy()
 template <class Table>
 bool LiteralBaseLoadStrategy<Table>::init(Table &)
 {   
+    int ret = 0;
+
+    ret = _reader.init(_xml.c_str());
+    if (0 != ret) {
+        DL_LOG_FATAL("fail to init InputObject, xml[%s].",
+                _xml.c_str());
+        return -1;
+    }
     return true;
 }
 
@@ -27,8 +47,32 @@ bool LiteralBaseLoadStrategy<Table>::post_load(Table &)
 }
 
 template <class Table>
-bool LiteralBaseLoadStrategy<Table>::load(Table &)
+bool LiteralBaseLoadStrategy<Table>::load(Table& table)
 {   
+    int ret = -1;
+    // open 
+    ret = _reader.open();
+    if (0 != ret) {
+        DL_LOG_FATAL("fail to open InputObject, xml[%s].",
+                _xml.c_str());
+        return -1;
+    }
+
+    configio::DynamicRecord record;
+
+    do {
+        ret = _reader.get_next_record(record);
+        if (ret < 0) {
+            DL_LOG_FATAL("Reading base failed[%s]",_xml.c_str());
+            return false;
+        }
+
+        (*_handler)(table,record);
+
+    }while (ret == 0);
+
+    _reader.close();
+    
     return true;
 }
 
@@ -44,11 +88,11 @@ LiteralBaseLoadStrategy<Table>::clone(TableGroup *) const
 template <class Table, class Connector>
 ConnectorLoadStrategy<Table,Connector>::ConnectorLoadStrategy(const std::string &desc,
             ConnectorMaker connector_maker,
-            TableGroup *pTable_group)
+            TableGroup *p_table_group)
          : _conn_desc(desc)
          , _p_connector(NULL)
          , _connector_maker(connector_maker)
-         , _pTable_group(pTable_group)
+         , _p_table_group(p_table_group)
          
 {
 
@@ -89,12 +133,12 @@ bool ConnectorLoadStrategy<Table, Connector>::pre_load(Table &table)
 template <class Table, class Connector>
 bool ConnectorLoadStrategy<Table, Connector>::init(Table &table)
 {
-    if (NULL == _connector_maker || NULL == _pTable_group) {
-        DL_LOG_FATAL("something is NULL [%p/%p]", _connector_maker, _pTable_group);
+    if (NULL == _connector_maker || NULL == _p_table_group) {
+        DL_LOG_FATAL("something is NULL [%p/%p]", _connector_maker, _p_table_group);
         return false;
     }
 
-    _p_connector = _connector_maker(table, *_pTable_group);
+    _p_connector = _connector_maker(table, *_p_table_group);
     if (NULL == _p_connector) {
         DL_LOG_FATAL("fail to allocate [%s]", _conn_desc.c_str());
         return false;
@@ -156,18 +200,18 @@ ConnectorLoadStrategy<Table, Connector>::ConnectorLoadStrategy(const ConnectorLo
     , _conn_desc(rhs._conn_desc)
     , _p_connector(NULL)
     , _connector_maker(rhs._connector_maker)
-    , _pTable_group(NULL)
+    , _p_table_group(NULL)
 {
-    //note that we should not copy _p_connector and _pTable_group here;
+    //note that we should not copy _p_connector and _p_table_group here;
     DL_LOG_TRACE("%s", _conn_desc.c_str());
 }
 
 template <class Table, class Connector>
 ConnectorLoadStrategy<Table, Connector> *
-ConnectorLoadStrategy<Table, Connector>::clone(TableGroup *pTable_group) const
+ConnectorLoadStrategy<Table, Connector>::clone(TableGroup *p_table_group) const
 {
-    if (NULL == pTable_group) {
-        DL_LOG_FATAL("pTable_group is NULL");
+    if (NULL == p_table_group) {
+        DL_LOG_FATAL("p_table_group is NULL");
         return NULL;
     }
 
@@ -179,7 +223,7 @@ ConnectorLoadStrategy<Table, Connector>::clone(TableGroup *pTable_group) const
         return NULL;
     }
 
-    p_new_strategy->_pTable_group = pTable_group;
+    p_new_strategy->_p_table_group = p_table_group;
 
     DL_LOG_TRACE("cloned a ConnectorLoadStrategy for %s", p_new_strategy->_conn_desc.c_str());
 

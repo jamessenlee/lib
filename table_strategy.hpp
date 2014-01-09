@@ -2,6 +2,7 @@
 #define DAS_LIB_TABLE_STRATEGY_H
 
 #include "table_defs.h"
+#include "configio.h"
 
 // forward declaration for IBaseUpdateStrategy::IncRecordType 
 namespace configio {
@@ -25,7 +26,7 @@ public:
     virtual bool pre_load(Table &table) = 0;
     virtual bool load(Table &table) = 0;
     virtual bool post_load(Table &table) = 0;
-    virtual IBaseLoadStrategy *clone(TableGroup *pTable_group) const = 0;
+    virtual IBaseLoadStrategy *clone(TableGroup *p_table_group) const = 0;
 };
 
 template <class Table>
@@ -36,14 +37,23 @@ IBaseLoadStrategy<Table>::~IBaseLoadStrategy()
 template <class Table>
 class LiteralBaseLoadStrategy : public IBaseLoadStrategy<Table> {
 public:
-    LiteralBaseLoadStrategy();
+    typedef bool (*LoadHandler)(Table &table, const configio::DynamicRecord &);
+
+    LiteralBaseLoadStrategy(const std::string& xml,LoadHandler handler);
+
+    LiteralBaseLoadStrategy(const LiteralBaseLoadStrategy& rhs);
 
     virtual bool init(Table &table);
     virtual bool pre_load(Table &table);
     virtual bool load(Table &table);
     virtual bool post_load(Table &table);
      
-    virtual LiteralBaseLoadStrategy *clone(TableGroup *pTable_group) const;
+    virtual LiteralBaseLoadStrategy *clone(TableGroup *p_table_group) const;
+private:
+    std::string _file_path;
+    std::string _xml;
+    configio::InputObject _reader;
+    LoadHandler _handler;
 };
 
 //用于倒排的创建
@@ -54,14 +64,14 @@ public:
     typedef Connector *(*ConnectorMaker)(Table &table, TableGroup &table_group);
     ConnectorLoadStrategy(const std::string &desc,
             ConnectorMaker connector_maker,
-            TableGroup *pTable_group);
+            TableGroup *p_table_group);
 
     virtual ~ConnectorLoadStrategy();
     virtual bool init(Table &table);
     virtual bool pre_load(Table &table) ;
     virtual bool load(Table &table);
     virtual bool post_load(Table &table);
-    virtual ConnectorLoadStrategy *clone(TableGroup *pTable_group) const;
+    virtual ConnectorLoadStrategy *clone(TableGroup *p_table_group) const;
 
 private:
 
@@ -73,7 +83,7 @@ private:
     const std::string _conn_desc;
     Connector *_p_connector;       //own this object
     ConnectorMaker _connector_maker;
-    TableGroup *_pTable_group;    // not own this object
+    TableGroup *_p_table_group;    // not own this object
 
 };
 
