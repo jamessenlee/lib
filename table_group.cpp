@@ -26,6 +26,7 @@ bool TableGroup::register_table_info(const table_info_t& table_info)
 
     TableRegisteryType& inc_table_group = _inc_schedule_info[table_info.inc_level]; 
     inc_table_group.push_back(table_info);
+    _table_info_map[table_info.table_name] = table_info;
  
     return true;
 }
@@ -232,19 +233,14 @@ const IBaseTableManager* TableGroup::get_table_manager(const std::string& name)
 
 IBaseTableManager* TableGroup::mutable_table_manager(const std::string& name)
 {
-    table_info_t table_info;
-    table_info.table_name =  name;
+    TableSeekType::iterator iter = _table_info_map.find(name);
 
-    TableRegisteryType::iterator iter = 
-        std::find(_table_manager_list.begin(),_table_manager_list.end(),
-                table_info);
-
-    if(iter == _table_manager_list.end()) {
-        DL_LOG_FATAL("fail to find table manager %s", name.c_str());
+    if (iter == _table_info_map.end()) {
+        DL_LOG_FATAL("Failed to find table[%s]",name.c_str());
         return NULL;
     }
-    
-    return iter->p_table_mgr;
+
+    return iter->second.p_table_mgr;
 }
     
 }//namespace das_lib

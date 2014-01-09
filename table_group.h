@@ -79,6 +79,10 @@ private:
     //注册的顺序,对load,reload,update要按照这个顺序执行
     typedef std::vector<table_info_t> TableRegisteryType;
     TableRegisteryType _table_manager_list;
+
+    typedef std::map<std::string,table_info_t> TableSeekType;
+    TableSeekType _table_info_map;
+    
     //inc level->table_info，为方便按层级处理增量需求
     typedef std::map<int,TableRegisteryType> IncScheduleInfoType;
     IncScheduleInfoType _inc_schedule_info;
