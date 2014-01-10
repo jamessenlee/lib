@@ -81,11 +81,7 @@ TableGroup& TableGroup::operator= (const TableGroup& rhs)
         rhs._table_manager_list.begin();
 
     while (iter != _table_manager_list.end() && rhs_iter != rhs._table_manager_list.end()) {
-        if (iter->table_name = rhs_iter->table_name) {
-            DL_LOG_FATAL("table name not equal,[%s] != [%s]",
-                    iter->table_name.c_str(),rhs_iter->table_name.c_str());
-            return *this;
-        }
+        iter->table_name = rhs_iter->table_name;
 
         if (iter->p_table_mgr == NULL) {
             DL_LOG_FATAL("Null pointer of iter table mgr,name[%s]",
