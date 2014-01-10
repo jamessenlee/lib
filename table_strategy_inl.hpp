@@ -60,16 +60,19 @@ bool LiteralBaseLoadStrategy<Table>::load(Table& table)
 
     configio::DynamicRecord record;
 
-    do {
+
+    ret = _reader.get_next_record(record);
+
+    while (ret == 0) {
+
+        (*_handler)(table,record);
+
         ret = _reader.get_next_record(record);
         if (ret < 0) {
             DL_LOG_FATAL("Reading base failed[%s]",_xml.c_str());
             return false;
         }
-
-        (*_handler)(table,record);
-
-    }while (ret == 0);
+    }
 
     _reader.close();
     
@@ -166,7 +169,6 @@ void ConnectorLoadStrategy<Table, Connector>::enable_connector(Table &table)
     }
 
     st::Timer tm;
-    //const char* const DESC = group_type_desc(_group_type);
     
     tm.start();
     _p_connector->refresh();
@@ -174,7 +176,7 @@ void ConnectorLoadStrategy<Table, Connector>::enable_connector(Table &table)
     
     tm.stop();
     DL_LOG_TRACE("Enable %s connector(%s)", _conn_desc.c_str(), "DESC to be filled");
-    DL_LOG_WARNING("Refreshed %s(%s): %lums (%luns per item)",
+    DL_LOG_TRACE("Refreshed %s(%s): %lums (%luns per item)",
             _conn_desc.c_str(),
             "DESC to be filled",
             tm.m_elapsed(),
@@ -182,7 +184,7 @@ void ConnectorLoadStrategy<Table, Connector>::enable_connector(Table &table)
 }
 
 template <class Table, class Connector>
-void ConnectorLoadStrategy<Table, Connector>::disable_connector(Table& )//Table &table)
+void ConnectorLoadStrategy<Table, Connector>::disable_connector(Table& )
 {
     if (NULL == _p_connector) {
         DL_LOG_FATAL("%s has not been initialized yet", _conn_desc.c_str());
@@ -190,7 +192,6 @@ void ConnectorLoadStrategy<Table, Connector>::disable_connector(Table& )//Table 
     }
 
     DL_LOG_TRACE("Disable %s connector(%s)", _conn_desc.c_str(), "DESC to be filled");
-            //group_type_desc(_group_type));
     _p_connector->disable_observers();
 }
 
@@ -235,7 +236,7 @@ IBaseUpdateStrategy<Table>::~IBaseUpdateStrategy()
 {}
 
 template <class Table>
-bool IncUpdateStrategy<Table>::init(Table&)//Table &table)
+bool IncUpdateStrategy<Table>::init(Table&)
 {
     return true;
 }
