@@ -311,7 +311,7 @@ bool LibManager::handle_inc()
 
     ret = _inc_reader.read_next(record);
     if (ret < 0) {
-        DL_LOG_FATAL("fail to read next budget inc");
+        DL_LOG_FATAL("fail to read next inc");
         return false;
     } else if (DASIncReader::READ_END == ret) {
         DL_LOG_TRACE("No DAS inc to handle since last round");

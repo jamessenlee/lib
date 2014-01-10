@@ -13,14 +13,12 @@ TableManager<Table>::TableManager(const std::string &desc,
         , _p_update_strategy(p_update_strategy)
         , _p_table_group(p_table_group)
 {
-        DL_LOG_TRACE("%s", _desc.c_str());
+
 }
 
 template<class Table>
 TableManager<Table>::~TableManager()
 {
-        DL_LOG_TRACE("%s", _desc.c_str());
-        
     if (NULL != _p_load_strategy) {
         delete _p_load_strategy;
         _p_load_strategy = NULL;
@@ -100,6 +98,12 @@ TableManager<Table>::TableManager(const TableManager &rhs)
     //note that we should not copy any pointers here;
 }
 
+template <class Table>
+TableManager<Table> &TableManager<Table>::operator=(const TableManager &rhs)
+{
+ 
+}
+
 //note: is meant to be used by version table manager
 //so, table name, load & update strategies will not be copied
 template <class Table>
@@ -108,6 +112,7 @@ TableManager<Table> &TableManager<Table>::operator=(const IBaseTableManager &rhs
     if (this == &rhs) {
         return *this;
     }
+
     const TableManager<Table> *pTable_manager = down_cast<const TableManager<Table> *>(&rhs);
     if (NULL == pTable_manager) {
         DL_LOG_FATAL("fail to cast table %s, maybe they are of different types", _desc.c_str());

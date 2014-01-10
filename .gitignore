@@ -10,3 +10,4 @@ Makefile
 *.swo
 lib-main
 log
+*.swn

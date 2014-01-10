@@ -80,12 +80,17 @@ private:
     typedef std::vector<table_info_t> TableRegisteryType;
     TableRegisteryType _table_manager_list;
 
+    //用以更快的找到表, table_name -> table_info_t
     typedef std::map<std::string,table_info_t> TableSeekType;
     TableSeekType _table_info_map;
     
     //inc level->table_info，为方便按层级处理增量需求
     typedef std::map<int,TableRegisteryType> IncScheduleInfoType;
     IncScheduleInfoType _inc_schedule_info;
+
+    //是否已经初始化,这里是广义的初始化判断，当拷贝构造时也算作已经
+    //被初始化了
+    bool _init;
 };
 
 }  // namespace das_lib

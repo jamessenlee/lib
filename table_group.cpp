@@ -5,35 +5,33 @@
 namespace das_lib {
 
 TableGroup::TableGroup()
+    : _init(false)
 {
 
 };
 
 bool TableGroup::register_table_info(const table_info_t& table_info)
 {
-    //1.首先加入到管理顺序容器里面
-    //2.再按照不同的层级加入到不同的增量处理顺序容器中
-    TableRegisteryType::iterator iter = 
-        std::find(_table_manager_list.begin(),_table_manager_list.end(),
-            table_info);
 
-    if (iter != _table_manager_list.end()) {
+    TableSeekType::iterator iter = _table_info_map.find(table_info.table_name);
+
+    if (iter != _table_info_map.end()) {
         DL_LOG_FATAL("Table[%s] is already registered",table_info.p_table_mgr->desc().c_str());
         return false;
     }
-    
+
+    _table_info_map[table_info.table_name] = table_info;
+
     _table_manager_list.push_back(table_info);
 
     TableRegisteryType& inc_table_group = _inc_schedule_info[table_info.inc_level]; 
     inc_table_group.push_back(table_info);
-    _table_info_map[table_info.table_name] = table_info;
  
     return true;
 }
 
 TableGroup::TableGroup(const TableGroup& rhs)
 {
-    DL_LOG_TRACE("in copy constructor");
     TableRegisteryType::const_iterator iter = 
         rhs._table_manager_list.begin();
 
@@ -45,6 +43,7 @@ TableGroup::TableGroup(const TableGroup& rhs)
 
         register_table_info(table_info);
     }
+    _init = true;
 }
 
 TableGroup::~TableGroup()
@@ -60,19 +59,17 @@ TableGroup::~TableGroup()
 
 TableGroup& TableGroup::operator= (const TableGroup& rhs)
 {
-    if (_table_manager_list.size() == 0) {
-        TableRegisteryType::const_iterator iter = 
-            rhs._table_manager_list.begin();
+    if (this == &rhs) {
+        return *this;
+    }
 
-        for (;iter != rhs._table_manager_list.end(); ++ iter) {
-            table_info_t table_info;
-            table_info.p_table_mgr = iter->p_table_mgr->clone(this);
-            table_info.table_name = iter->p_table_mgr->desc();
-            table_info.inc_level = iter->inc_level;
 
-            register_table_info(table_info);
-        }
-    } else if (_table_manager_list.size() != rhs._table_manager_list.size()) {
+    if (!_init) {
+        TableGroup(rhs);
+        return *this;
+    }
+    
+    if (_table_manager_list.size() != rhs._table_manager_list.size()) {
         DL_LOG_FATAL("in operator =, table size not equal,[%lu]!=[%lu]",
                 _table_manager_list.size(),rhs._table_manager_list.size());
         return *this;
@@ -84,7 +81,7 @@ TableGroup& TableGroup::operator= (const TableGroup& rhs)
         rhs._table_manager_list.begin();
 
     while (iter != _table_manager_list.end() && rhs_iter != rhs._table_manager_list.end()) {
-        if (iter->table_name != rhs_iter->table_name) {
+        if (iter->table_name = rhs_iter->table_name) {
             DL_LOG_FATAL("table name not equal,[%s] != [%s]",
                     iter->table_name.c_str(),rhs_iter->table_name.c_str());
             return *this;
@@ -143,6 +140,7 @@ bool TableGroup::init()
         }
     }
 
+    _init = true;
     return succ;
 }
 

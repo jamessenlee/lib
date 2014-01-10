@@ -45,6 +45,9 @@ public:
                     IBaseUpdateStrategy<Table> *p_update_strategy,
                     TableGroup *pTable_group);
     
+    TableManager(const TableManager &rhs);
+    TableManager &operator=(const TableManager &rhs);
+ 
     virtual ~TableManager();
 
     virtual bool init();
@@ -68,9 +71,7 @@ public:
 protected:
     
 private:
-    TableManager(const TableManager &rhs);
-    TableManager &operator=(const TableManager &rhs) {}
-    
+   
     Table _table;  
     const std::string _desc;
     IBaseLoadStrategy<Table> *_p_load_strategy;     //own this object
